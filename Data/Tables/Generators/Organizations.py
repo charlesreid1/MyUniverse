@@ -45,24 +45,24 @@ class generator:
     def objplural(self):
         result = self.obj()
 
-	pluralform = {"city": "cities",
-		    "cross": "crosses",
-		    "fox": "foxes",
-		    "knife": "knives",
-		    "lotus": "lotuses",
-		    "staff": "staves",
-		    "wolf": "wolves",
-		    }
-	
-	if result in pluralform:
-	    result = pluralform[result]
-	else:
-	    result = result + "s"
+        pluralform = {"city": "cities",
+                "cross": "crosses",
+                "fox": "foxes",
+                "knife": "knives",
+                "lotus": "lotuses",
+                "staff": "staves",
+                "wolf": "wolves",
+                }
+        
+        if result in pluralform:
+            result = pluralform[result]
+        else:
+            result = result + "s"
 
         return result
 
     def group(self):
-        elements = ["alliance", "band", "brotherhood", "brothers", "cabal", "circle", "clan", "compact", "company", "coven", "covenant", "cult", "defenders", "fellowship", "fighters", "guardians", "guards", "guild", "heroes", "horde", "house", "hunters", "keepers", "knights", "masters", "order", "protectors", "raiders", "regulars", "ring", "seekers", "servants", "sisterhood", "sisters", "society", "tribunal", "trinity", "wanderers", "warriors", "watchers", "way"]
+        elements = ["alliance", "band", "brotherhood", "brothers", "cabal", "cartel", "circle", "clan", "compact", "company", "coven", "covenant", "cult", "defenders", "fellowship", "fighters", "guardians", "guards", "guild", "heroes", "horde", "house", "hunters", "keepers", "knights", "masters", "order", "protectors", "raiders", "regulars", "ring", "seekers", "servants", "sisterhood", "sisters", "society", "syndicate", "tribunal", "trinity", "wanderers", "warriors", "watchers", "way"]
         return choice(elements)
 
 
