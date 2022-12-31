@@ -1,0 +1,526 @@
+* A
+    * Spice
+    * Test
+    * cyberpunk
+    * pulp
+    * spaceopera
+* Animals
+    * Animal
+* Asia
+    * Romance of the Three Kingdoms
+    * The Plum in the Golden Vase
+* Clothes
+    * ClothingFemale
+    * ClothingMale
+    * Jewelry
+    * Military Uniform
+* Dragons
+    * Dragon description
+    * Dragon names
+* Fantasy
+    * Fantasy Adventure Generator
+    * Fantasy Adventure Locations
+    * Fantasy Assignment
+    * Fantasy Campsite
+    * Fantasy Character Concept
+    * Fantasy Class Generator
+    * Fantasy Combat Class Generator
+    * Fantasy Debris and Detritus
+    * Fantasy Farmstead
+    * Fantasy Guild
+    * Fantasy Hex Contents
+    * Fantasy Landmarks
+    * Fantasy Location Encounters
+    * Fantasy Location Events
+    * Fantasy Male Military Zero
+    * Fantasy Mansion Domestic Security Measures
+    * Fantasy NPC - Basic
+    * Fantasy Pantheon
+    * Fantasy Person Of Interest
+    * Fantasy Profession
+    * Fantasy RPG Character
+    * Fantasy Race Generator
+    * Fantasy Region
+    * Fantasy Saint
+    * Fantasy Scenario Generator
+    * Fantasy Scene
+    * Fantasy Situation Generator
+    * Fantasy Spellcasting Class Generator
+    * Fantasy Town
+    * Fantasy Town - Simpler
+    * Fantasy Town Event
+    * Fantasy Town Feature
+    * Fantasy Town Feature Description
+    * Fantasy barbarian names
+    * Fantasy city name paired words
+    * FantasyBooks
+* Food
+    * Bebidas Fantasticas
+    * Cheeses
+    * FantasyDrinks
+    * FantasyMenu
+    * Fish
+    * Nombres de Tabernas y Posadas
+    * Taberna
+    * Tavern
+* Generators
+    * Angels
+    * Barbarian Names
+    * Book Titles
+    * Coats of Arms
+    * Demon Names
+    * Demon Names II
+    * Dwarven Names
+    * Dwarven Settlements
+    * Elven Names
+    * Herbs
+    * Hyborian Names
+    * Inn and Tavern Names
+    * Instant Adventure Namer
+    * Lizardman Names
+    * Lovecraft Creatures
+    * Names - Celtic
+    * Names - Egyptian
+    * Names - Greek
+    * Names - Old English
+    * Names - Sumerian
+    * Orc Names
+    * Orc Tribes
+    * Organizations
+    * Place Names
+    * Ship Names
+    * Sites - Mystic Places
+    * Streets
+    * Towns
+    * Towns II
+    * Woodlands
+* Magic
+    * Arcane Substance
+    * ArcaneBooks
+    * HerbalProducts
+    * Magic Incantation
+    * Tarot Card Draw
+* Monster
+    * New Monster Name
+    * Weird Fantasy Monster
+* Names
+    * AV Name Generator
+    * Afghul Names
+    * Afrika Names
+    * Ahaggar Names
+    * Amazon Names
+    * American Census Names
+    * American Indian Names
+    * American Surnames
+    * Ancient Cenurethi Angel Names
+    * Ancient Greek Female Names
+    * Ancient Greek Island Names
+    * Ancient Greek Male Names
+    * Anglo-Saxon Names
+    * Apocalypse World Names
+    * Apocalyptus Name Generator
+    * Arabesque Names
+    * Aztec Names
+    * Bad Business Names
+    * Blues Musician Name Generator
+    * Botanical Female Names
+    * Boxer Names
+    * Brewnames
+    * Catholic Saint Names
+    * Centaur Names
+    * Compound Word Names
+    * Congo Names
+    * Cornish Names
+    * Cowboy Names
+    * Demon Name
+    * Dog Names
+    * Dutch Names
+    * Dwarf Names
+    * Fantasy Names
+    * Fantasy Town Names
+    * Female American Names
+    * Fish People Names
+    * Golden Age Name Generator
+    * Herb Names
+    * Horse Names
+    * Inn and Tavern Names
+    * Irish Celtic Names
+    * Italian Names
+    * Japanese names
+    * Megadungeon Zone Names
+    * Not American Names
+    * Occult Case Name
+    * Occult Spell Name
+    * Operational Code Names
+    * Orc Names
+    * Pilgrim Names
+    * Pirate Names
+    * Portuguese Names
+    * Primordial Dragon Names
+    * Ranger Names
+    * Russianesque Place Names
+    * Scottish Names
+    * Ship Names
+    * Superhero Names
+    * Survivor Contestant Name Generator
+    * Turkish Names
+    * Victorian Names
+    * Weapon Names
+    * Welsh Names
+    * Wookiee Names
+    * Zoma Names
+* Occupation
+    * Hobbies
+    * Modern Hobby
+    * Modern Profession
+    * Technical Job Title
+    * Western Occupation
+* Oracles
+    * A Nest of Vipers Oracle
+    * Against the forest oracle
+    * Amber Oracle
+    * Anime Oracle
+    * Art Grace and Guts Oracle
+    * Blood and Sex Oracle
+    * British Intelligence Oracle
+    * Bullet Ballet Oracle
+    * Casablanca Oracle
+    * Cascadian Folklore Oracle
+    * Clutch Oracle
+    * Coen Brothers Oracle
+    * Coldspell Oracle
+    * Conan Oracle
+    * Demon City Blues Oracle
+    * Doctor Who Oracle
+    * Dont Rest Your Head Oracle
+    * Dune Oracle
+    * Early Vignette Oracle
+    * Elder Scrolls - Mephalas Web Oracle
+    * Exalted - Age of Sorrows
+    * Fantasy Oracle Maker
+    * Fantasy oracle compilation
+    * Far East Plot Oracle
+    * Final Fantasy Oracle
+    * Firefly Oracle
+    * Flesh and Metal Oracle
+    * Forgotten Realms Oracle
+    * God Kings of War Oracle
+    * Gorillaz Oracle
+    * Gothic Horror Oracle
+    * Grey Ranks Big Grid Oracle
+    * Harrow Oracle
+    * Heavy Metal Fantasy Oracle
+    * Hellboy BPRD Oracle
+    * Hold Steady Oracle
+    * IAWA Oracle Oracle
+    * In A Wicked Diner: Tom Waits Oracle
+    * Land Between Two Rivers Oracle
+    * Lovecraftian Horror Oracle
+    * Mario Oracle
+    * Mirrorshades Oracle
+    * Modern Occult Oracle
+    * Modern Romance Oracle
+    * Modern Supernatural Oracle
+    * Mouse Guard Oracle
+    * Mutant - Heirs of Doom Oracle
+    * Norse Oracle
+    * Parable Title
+    * Paranormal Spy-Thriller Oracle
+    * Pirate Oracle - All Ashore
+    * Pirate Oracle - Black Sails on the Horizon
+    * Pirate Oracle - Cutlass and Dagger
+    * Pirate Oracle - Letters of Marque and Reprisal
+    * Pirate Oracle Maker
+    * Planescape Oracle: Sigil - Wicked tales from the City of Doors
+    * Plot Keyword Oracle
+    * Plot Keyword Oracle Light
+    * Plot Kickers and Oracles
+    * Rifts Oracle
+    * Samurai Oracle - Tales of mythic Japan
+    * Shadowrun Oracle
+    * Shakespeare Oracle
+    * Shock - Oracle
+    * Sicilian Blood Oracle
+    * Solid Gold Easy Action TRex Gaming Oracle
+    * Space Opera Oracle
+    * Spelljammer Oracle
+    * Sufficiently Advanced Oracle
+    * Superhero Oracle
+    * Superhero Oracle - Modern
+    * Sword and Planet Oracle
+    * Talislanta Oracle
+    * The Unquiet Past Oracle
+    * The Wire Oracle
+    * Tribe 8 Oracle
+    * Unknown Armies Oracle
+    * Veshti Oracle - All Too Human
+    * Veshti Oracle - The Desolate Places
+    * Veshti Oracle - The Faraway Lands
+    * Veshti Oracle - The Fractured City
+    * Veshti Oracle - The Treacherous Seas
+    * Vista Heights Oracle
+    * Warhammer 40K Oracle - Heresy
+    * Warhammer 40K Oracle - There Will Be War
+    * Weird Olympia Oracle
+    * Western Oracle
+    * Words of Wisdom
+    * Wuxia Oracle
+* Organization
+    * Fantasy Military Unit
+    * Orc Tribe Name
+    * Secret Society Name
+    * Secret Society Title
+    * Wizard schools
+* People
+    * 1001 Nights Story Title
+    * Champion of darkness
+    * Creepy Fantasy Villain
+    * Dossier
+    * Enneagram Personality Generator
+    * Fantasy Male Military Hero
+    * Female Appearance
+    * German Female
+    * German Male
+    * HalflingHippies
+    * Mexicano
+    * Meyers-Briggs Personality Generator
+    * Motorcycle Gang
+    * Motorcycle Gang with Members
+    * Native Tribes
+    * NorthlanderFemale
+    * NorthlanderMale
+    * Oldham Personality Generator
+    * One sentence NPC
+    * One sentence fantasy NPC
+    * Personality Generator
+    * Piercings
+    * Quick NPC
+    * Random Humanoid Horde
+    * Ranks and Titles
+    * ScottishFemale
+    * ScottishMale
+    * Synistars Personality Generator
+    * Tattoos
+    * Undead Software Programmer Character Concept
+    * Vietnam Nicknames
+    * Web Economy BS
+* Places
+    * A Nice Southern Town
+    * Bad Year in Bear Lake
+    * Bleakworld
+    * Dungeon Area Name
+    * Old West Places
+    * Poetic Destinations
+    * Random Fortress
+    * Settlements
+    * ThreeSixteen Planets
+    * US Cities
+    * World Cities
+* Plot
+    * Character Concept of Mu
+    * Encounter-a-Day
+    * Generic Mission Generator
+    * Jacobs Instant Plot Generator
+    * Major Events
+    * Mutant Academy Adventure Generator
+    * Mythic Random Events
+    * Oblique Strategy
+    * Open story threads
+    * Penny For My Thoughts Memory Trigger
+    * Pickpocket
+    * Police Dispatches
+    * Problems
+    * Protagonist
+    * Random Fantasy Plot
+    * Ten word adventure synopsis
+    * The Worlds Unknown
+* Primetime
+    * Primetime Adventures Pitch Generator
+    * Primetime Adventures Protagonist
+    * Primetime Adventures Protagonist Scifi
+    * Primetime Adventures Protagonist Urban Fantasy
+    * Primetime Adventures Scifi Edges
+* Pulp
+    * A Pulp
+    * B Pulp
+    * C Pulp
+    * D Pulp
+    * E Pulp
+    * F Pulp
+    * Film Noir Monologue
+    * G Pulp
+    * H Pulp
+    * I Pulp
+    * J Pulp
+    * K Pulp
+    * L Pulp
+    * M Pulp
+    * N Pulp
+    * Noir Oracle - Down These Mean Streets
+    * O Pulp
+    * P Pulp
+    * Printcrime Remixed
+    * Pulp Character Concept
+    * Pulp Fantasy Nation
+    * Pulp Fantasy Titles
+    * Pulp Location
+    * Pulp Novel
+    * Pulp Oracle - High Adventure in Exotic Locales
+    * Pulp Oracle - I Love A Mystery
+    * Pulp Oracle - Rip-Roaring Twenties
+    * Pulp Oracle - Weird Science
+    * Pulp Oracle Maker
+    * Pulp Villain
+    * Pulp Villain Organization
+    * Q Pulp
+    * R Pulp
+    * S Pulp
+    * T Pulp
+    * U Pulp
+    * V Pulp
+    * W Pulp
+    * X Pulp
+    * Y Pulp
+    * Z Pulp
+* Religion
+    * Angel generator
+    * Demon generator
+    * DitV Female Name
+    * DitV Male Name
+    * DitV Town Name
+    * List of gods
+    * Priest spheres
+    * Rituals
+    * SpiritForm
+* Rolemaster
+    * ModernCharacter
+* SGNP
+    * SGNP 1001 nights
+    * SGNP Cowboys
+    * SGNP Old Polish
+    * SGNP Sixties America
+    * SGNP amazon
+    * SGNP angels and demons
+    * SGNP apijan
+    * SGNP arthurian
+    * SGNP assyrian
+    * SGNP aztec
+    * SGNP baker street
+    * SGNP barbarians
+    * SGNP berber
+    * SGNP biblical
+    * SGNP bikers
+    * SGNP brazilian
+    * SGNP byzantine greek
+    * SGNP catalan
+    * SGNP celtic
+    * SGNP chechen
+    * SGNP cheyenne
+    * SGNP chickasaw
+    * SGNP creepy campus
+    * SGNP crime and punishment
+    * SGNP czech
+    * SGNP danish
+    * SGNP doukhobor
+    * SGNP egyptian
+    * SGNP elizabethan
+    * SGNP ethiopian
+    * SGNP fae
+    * SGNP fantasy russian
+    * SGNP filipino
+    * SGNP finnish
+    * SGNP gamers
+    * SGNP grey ranks
+    * SGNP hawohohewu
+    * SGNP inuit
+    * SGNP japanese
+    * SGNP korean
+    * SGNP magicians
+    * SGNP maori
+    * SGNP medieval french
+    * SGNP mexican cinema
+    * SGNP modern american
+    * SGNP modern british isles
+    * SGNP modern chinese
+    * SGNP modern french
+    * SGNP modern jamaican
+    * SGNP mongolian
+    * SGNP new york 1909
+    * SGNP nhirrpi
+    * SGNP norse
+    * SGNP orcish
+    * SGNP owlbear
+    * SGNP persian
+    * SGNP polish
+    * SGNP primitive
+    * SGNP psuedo-american
+    * SGNP psuedo-english
+    * SGNP russian
+    * SGNP senegalese
+    * SGNP swedish
+    * SGNP tavern
+    * SGNP thai
+    * SGNP trappelensteink
+    * SGNP tricksters
+    * SGNP united kingdom
+    * SGNP venerian
+    * SGNP weather
+    * SGNP weirdos
+    * SGNP zulu
+* SciFi
+    * SciFi Story
+* Spy
+    * Spycraft Scene
+    * Spycraft Triggering Event
+* Traveller
+    * Army
+    * Marines
+    * Merchants
+    * Navy
+    * Other
+    * Scouts
+    * Spice
+    * Traveller
+* Unknown
+    * Dramatic Situation
+    * Medieval Musical Instruments
+    * Medieval Occupations
+    * Plots
+    * Secrets
+    * Splats
+    * Zen
+    * junk
+* Utility
+    * But Cards
+    * Color
+    * Compass direction
+    * Compound Word
+    * Conundrum
+    * Dice
+    * Elements
+    * Found in a crate
+    * GheronUtility
+    * Greek letter names
+    * Inscriptions
+    * Letters - uppercase
+    * MonsterParts
+    * Status Changes
+    * Traps
+    * Utility
+    * Weather
+* Weapons
+    * AmmunitionThrown
+    * Bows
+    * Dragon type
+    * HaftedWeapons
+    * Lances
+    * StaffClub
+    * Swords
+    * Weapon
+    * WeaponsOther
+    * WhipChain
+    * XBows
+* csv
+    * JapanCity
+    * USCity
+    * WorldAgglomeration
