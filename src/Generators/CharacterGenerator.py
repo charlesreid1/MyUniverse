@@ -1,5 +1,5 @@
 
-from npcgen.charactermaker import * 
+from .npcgen.charactermaker import * 
 
 
 class CharacterGenerator:
@@ -13,13 +13,13 @@ class CharacterGenerator:
         self.parameters['Class'] = []
         self.pList = ['Seed', 'Power', 'Genre', 'Class']
     def getGenreMap(self):
-        aliases = self.classes.keys()
+        aliases = list(self.classes.keys())
         aliases.sort()
-        genreNames = self.genreMap.keys()
+        genreNames = list(self.genreMap.keys())
         genreNames.sort()
         return genreNames
     def getAliasMap(self):
-        aliases = self.classes.keys()
+        aliases = list(self.classes.keys())
         aliases.sort()
         return aliases
     def getClassList(self, genre):
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         elif args[1].lower() in ('h', 'help', '/?', '/h', '-?', '-h', '--help'):
             PrintHelp(args[0])
         else:
-            print args[1:]
-            #print GenerateHTMLString(args[1:], xmlData, power=1, mode=1)
+            print(args[1:])
+            #print(GenerateHTMLString(args[1:], xmlData, power=1, mode=1))
     else:
         PrintHelp(args[0]) 

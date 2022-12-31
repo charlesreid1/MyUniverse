@@ -1,5 +1,3 @@
-#!/c/Python22/python
-
 """
  *******************************************************************************
  * 
@@ -19,16 +17,298 @@
  *******************************************************************************
 """
 
-from ClassNames import GetFullName
-from Utils import randint, getModeValue, GetInt, GetRootDir, RandDistribInt
-from cPickle import dumps
+from .ClassNames import GetFullName
+from .Utils import randint, getModeValue, GetInt, GetRootDir, RandDistribInt
+
+######################################################
+# constant data
+kNPCGenHTMLDocType        = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">'
+kNPCGenCSSLink            = '<LINK REL=STYLESHEET HREF="%s/NPCGen.css" TYPE="text/css">'
+
+kHighParrySkills        = frozenset(('fencing', 'main-gauche', 'staff', 'short-staff'))
+kMainAttributeKeys        = frozenset(('stats', 'advantages', 'disadvantages'))
+kMainStatKeys            = frozenset(('strength', 'dexterity', 'intelligence', 'health'))
+kSkillAttributeKeys        = frozenset(('attributes', 'skills'))
+kItemAttributeKeys        = frozenset(('weapons', 'armor'))
+kOldHair                = frozenset(('gray', 'white'))
+kBaldHair                = frozenset(('bald', 'brown-balding'))
+kThreeColumnHeadings    = frozenset(('advantages/disadvantages/quirks', 'skills', 'stats/secondary stats', 'appearance'))
+kNonSkillAttributeKeys    = frozenset(('advantages/disadvantages/quirks', 'stats/secondary stats'))
+kNewLineModItemKeys        = frozenset(('*mod0', '*mod3', '*mod6'))
+kZeroValueAttributes    = frozenset(('rank', 'paramilitary-rank', 'magery', 'eidetic-memory', 'pacifism', 'lame'))
+
+kEnhancedParryModifiers    = ('combat-reflexes', 'enhanced-parry', 'passive-defense')
+kEnhancedDodgeModifiers = ('combat-reflexes', 'enhanced-dodge', 'passive-defense')
+kEnhancedBlockModifiers = ('combat-reflexes', 'enhanced-block', 'passive-defense')
+kBaseDRModifiers        = ('toughness', 'damage-resistance')
+kMainAttribKeyOrder        = ('stats', 'appearance', 'attributes', 'advantages', 'disadvantages', 'quirks', 'skills', 'maneuvers', 'weapons', 'armor', 'combat')
+kDisplayAttribKeyOrder    = ('appearance', 'stats/secondary stats', 'advantages/disadvantages/quirks', 'skills', 'combat', 'weapons', 'armor')
+kAppearanceKeyOrder        = ('sex', 'hair', 'eyes', 'age', 'height', 'weight', 'nationality', 'tech-level', 'genre')
+kStatAttribKeyOrder        = ('strength', 'dexterity', 'intelligence', 'health', 'hit-points', 'fatigue', 'speed', 'move', 'will', 'vision', 'hearing', 'taste-smell')
+kItemKeyOrder            = ('name', 'quantity', 'damage', 'db', 'dr', 'area', 'weight', 'rel', 'dam', 'ss', 'acc', 'rof', 'shots', 'st',
+                           'rcl', 'rch', 'note', 'doses', 'ammo', '*mod0', '*mod1', '*mod2', '*mod3', '*mod4', '*mod5', '*mod6', '*mod7', '*mod8')
+kUnarmedParrySkills        = frozenset(('brawling', 'boxing', 'martial-punch', 'martial-throw', 'karate', 'judo'))
+kUnarmedSkillDivisorSets = (('martial-punch', 5.0), ('karate', 5.0), ('boxing', 5.0), ('brawling', 10.0))
+
+kPhysicalSkillCosts        = (.5, 1, 2, 4, 8)
+kMentalSkillCosts        = (.5, 1, 2, 4, 8)
+kMentalVHSkillCosts        = (.5, 1, 2, 4, 8)
+kBaseStatCosts            = (-10, 0, 10)
+
+
+                    # str*: (level, desc)
+kEncumbranceTable =  {
+                        2:  (0,  'None'),
+                        4:  (1,  'Light'),
+                        6:  (2,  'Medium'),
+                        12: (3,  'Heavy'),
+                        20: (4,  'Extra-Heavy'),
+                        30: (5,  'Super-Heavy'),
+                        50: (10, 'Immobilized')
+                    }
+
+kStrengthTable = {
+                        #     thrust,  swing
+                    5    :    ((1, -5), (1, -5)),
+                    6    :    ((1, -4), (1, -4)),
+                    7    :    ((1, -3), (1, -3)),
+                    8    :    ((1, -3), (1, -2)),
+                    9    :    ((1, -2), (1, -1)),
+                    10    :    ((1, -2), (1,  0)),
+                    11    :    ((1, -1), (1,  1)),
+                    12    :    ((1, -1), (1,  2)),
+                    13    :    ((1,  0), (2, -1)),
+                    14    :    ((1,  0), (2,  0)),
+                    15    :    ((1,  1), (2,  1)),
+                    16    :    ((1,  1), (2,  2)),
+                    17    :    ((1,  2), (3, -1)),
+                    18    :    ((1,  2), (3,  0)),
+                    19    :    ((2, -1), (3,  1)),
+                    20    :    ((2, -1), (3,  2)),
+                    21    :    ((2,  0), (4, -1)),
+                    22    :    ((2,  0), (4,  0)),
+                    23    :    ((2,  1), (4,  1)),
+                    24    :    ((2,  1), (4,  2)),
+                    25    :    ((2,  2), (5, -1)),
+                    26    :    ((2,  2), (5,  0)),
+                    27    :    ((3, -1), (5,  1)),
+                    28    :    ((3, -1), (5,  2)),
+                    29    :    ((3,  0), (6, -1)),
+                    30    :    ((3,  0), (6,  0))
+                }
+
+kStrengthHeightMap = {
+                        #st :  height"
+                        5    :  64,
+                        6    :  65,
+                        7    :  66,
+                        8    :  67,
+                        9    :  68,
+                        10    :  69,
+                        11    :  70,
+                        12    :  71,
+                        13    :  72,
+                        14    :  73,
+                        15    :  74,
+                        16    :  75,
+                        17    :  76,
+                        18    :  77,
+                        19    :  78,
+                        20    :  79,
+                        21    :  80,
+                        22    :  81,
+                        23    :  83,
+                        24    :  85,
+                        25    :  86,
+                        26    :  87,
+                    }
+
+kHeightWeightMap = {
+                        #ht":  lbs
+                        30    :  40,
+                        31    :  42,
+                        32    :  44,
+                        33    :  45,
+                        34    :  46,
+                        35    :  47,
+                        36    :  48,
+                        37    :  49,
+                        38    :  50,
+                        39    :  52,
+                        40    :  54,
+                        41    :  56,
+                        42    :  58,
+                        43    :  60,
+                        44    :  62,
+                        45    :  64,
+                        46    :  66,
+                        47    :  68,
+                        48    :  70,
+                        49    :  72,
+                        50    :  74,
+                        51    :  76,
+                        52    :  78,
+                        53    :  81,
+                        54    :  84,
+                        55    :  87,
+                        56    :  90,
+                        57    :  95,
+                        58    :  100,
+                        59    :  105,
+                        60    :  110,
+                        61    :  115,
+                        62    :  120,
+                        63    :  125,
+                        64    :  130,
+                        65    :  132,
+                        66    :  135,
+                        67    :  140,
+                        68    :  145,
+                        69    :  150,
+                        70    :  155,
+                        71    :  160,
+                        72    :  165,
+                        73    :  170,
+                        74    :  180,
+                        75    :  190,
+                        76    :  200,
+                        77    :  210,
+                        78    :  220,
+                        79    :  230,
+                        80    :  240,
+                        81    :  250,
+                        82    :  260,
+                        83    :  270,
+                        84    :  280,
+                        85    :  290,
+                        86    :  300,
+                        87    :  310,
+                        88    :  320,
+                        89    :  330,
+                        90    :  340,
+                        91    :  350,
+                        92    :  360,
+                        93    :  370,
+                        94    :  380,
+                        95    :  390,
+                        96    :  400,
+                        97    :  410,
+                        98    :  420,
+                        99    :  430,
+                        100    :  440,
+                        101 :  450,
+                        102 :  460,
+                        103 :  470,
+                        104 :  480,
+                        105 :  490,
+                        106 :  495,
+                        107 :  500,
+                        108 :  505,
+                        109 :  510,
+                        110 :  515,
+                    }
+
+kEyeColours = (
+                'brown',
+                'brown',
+                'dark-brown',
+                'dark-brown',
+                'dark-brown',
+                'light-brown',
+                'light-brown',
+                'hazel',
+                'blue-gray',
+                'blue',
+                'green',
+                'brown'
+              )
+
+kHairColours = (
+                'brown',
+                'auburn',
+                'red-brown',
+                'dark-brown',
+                'light-brown',
+                'light-brown',
+                'brown',
+                'brown',
+                'brown',
+                'blonde',
+                'dirty-blonde',
+                'light-blonde',
+                'strawberry-blonde',
+                'white-blonde',
+                'red',
+                'red-brown',
+                'orange-red',
+                'gray',
+                'white',
+                'black',
+                'black',
+                'black',
+                'jet-black',
+                'blue-black',
+                'brown-balding',
+                'bald',
+                'bald'
+              )
+
+kRankLevels = {
+                0:    ('Private', 'Private', 'Private 1st Class'),
+                1:    ('Corporal', 'Corporal', 'Corporal', 'Sergeant', 'Sergeant', 'Staff Sergeant'),
+                2:    ('Sergeant 1st Class', 'Sergeant 1st Class', 'Sergeant 1st Class', 'Gunnery Sergeant', 'Master Sergeant', 'Master Sergeant', 'First Sergeant', 'Sergeant Major'),
+                3:    ('2nd Lieutenant', '2nd Lieutenant', '1st Lieutenant'),
+                4:    ('Captain', 'Captain', 'Major'),
+                5:    ('Lt. Colonel',),
+                6:    ('Colonel',),
+                7:    ('Brigadier General', 'Major General'),
+                8:    ('Lt. General', 'Lt. General', 'Lt. General', 'General', 'General', 'General of the Army')
+              }
+
+kParaRankLevels = {
+                0:    ('Cadet', 'Officer', 'Officer'),
+                1:    ('Senior Officer', 'Sergeant', 'Sergeant'),
+                2:    ('Senior Segeant', 'Detective Sergeant',),
+                3:    ('Lieutenant', 'Detective Lieutenant'),
+                4:    ('Captain', 'Captain', 'Commander'),
+                5:    ('Deputy Chief',),
+                6:    ('Chief of Police',)
+              } 
+
+"""
+ *******************************************************************************
+ * $Log: NPCConstants.py,v $
+ * Revision 2.7  2004/03/13 18:08:46  andrew
+ * str damage, up to str 30
+ *
+ * Revision 2.6  2004/01/12 02:33:16  andrew
+ * refactor to support new iewin version
+ *
+ * Revision 2.5  2004/01/10 15:30:59  andrew
+ * changes to support point calculation
+ *
+ * Revision 2.4  2003/10/09 00:36:59  andrew
+ * create static cache of commonly used sets
+ *
+ * Revision 2.3  2003/10/08 18:41:54  andrew
+ * use new set types for sequences that need hash() function
+ *
+ * Revision 2.2  2003/07/12 00:31:56  ayinger
+ * fail to force rev, weird
+ *
+ * Revision 2.1  2003/07/11 20:51:28  ayinger
+ * add RCS tags
+ *
+ *******************************************************************************
+"""
+######################################################
+
+from pickle import dumps
 from pprint import PrettyPrinter
 from random import choice, shuffle, randint
-from sets import Set, ImmutableSet
 from time import time, strftime
 from zlib import compress
 import math, sys, os, codecs
-import NPCConstants
 
 
 
@@ -38,8 +318,7 @@ kDwarfismModifier = 0.6
 kGigantismModifier = 1.2
 kNPCTemplateFileName = 'NPCTemplate.html'
 kDateTimeFormat = "%Y-%m-%d %H:%M:%S"
-kuBOM = unicode(codecs.BOM_UTF8, 'utf-8')
-#print GetRootDir()
+#print(GetRootDir())
 
 def GetNPC(xmlData, classAlias, power, id):
     'return a unique npc'
@@ -49,7 +328,7 @@ def GetNPC(xmlData, classAlias, power, id):
     if classType:
         return NPCBuilder(id, power, classType, classes, attribmap, weapons, armor, nameMap).getNPC()
     else:
-        print "sorry, could not find non-abstract class alias or name '%s'" % (classAlias,)
+        print(("sorry, could not find non-abstract class alias or name '%s'" % (classAlias,)))
         sys.exit(-1)
 
 
@@ -58,8 +337,8 @@ def GetClassType(classPointer, classes):
     classType = None
     if classPointer in classes:
         classType = classes[classPointer]
-    elif classPointer in ImmutableSet([classtype.getName() for classtype in classes.values()]):
-        classType = [classtype for classtype in classes.values() if classtype.getName() == classPointer][0]
+    elif classPointer in frozenset([classtype.getName() for classtype in list(classes.values())]):
+        classType = [classtype for classtype in list(classes.values()) if classtype.getName() == classPointer][0]
     if classType and not classType.isAbstract():
         return classType
 
@@ -79,12 +358,12 @@ class NPC(object):
         return self.getTitle()
 
     def getFullRankName(self):
-        return u'%s%s' % (self.getRank(), self.mData['name'])
+        return '%s%s' % (self.getRank(), self.mData['name'])
     def getRank(self):
         'return text rank from rank level'
         if self.rank is None:
             rank = ''
-            for rankType, rankDict in (('paramilitary-rank', NPCConstants.kParaRankLevels), ('rank', NPCConstants.kRankLevels)):
+            for rankType, rankDict in (('paramilitary-rank', kParaRankLevels), ('rank', kRankLevels)):
                 if (rankType in self.mData['advantages']) and (self.mData['advantages'][rankType] in rankDict):
                     rank = choice(rankDict[self.mData['advantages'][rankType]]) + ' '
             self.rank = rank
@@ -93,7 +372,7 @@ class NPC(object):
         return self.getFullRankName()
     def getTitle(self):
         if not self.title:
-            selfstring = u''
+            selfstring = ''
             selfstring += '%s: %s%s' % (self.mData['class'], self.getRank(), self.mData['name'])
             self.title = selfstring
         return self.title
@@ -161,7 +440,7 @@ class NPC(object):
     def getDBValues(self):
         tl = self.getTL()
         if (tl in ('*', '?')): tl = -1
-        #print (strftime(kDateTimeFormat), self.getType(), self.getName(), self.getGender(), self.getNationality(), self.getTL(), self.getGenre(), self.getPoints(), self.getDBData(1), self.getGURPSVersion())
+        #print((strftime(kDateTimeFormat), self.getType(), self.getName(), self.getGender(), self.getNationality(), self.getTL(), self.getGenre(), self.getPoints(), self.getDBData(1), self.getGURPSVersion()))
         return (strftime(kDateTimeFormat), self.getType(), self.getName(), self.getGender(), self.getNationality(), tl, self.getGenre(), self.getPoints(), self.getDBData(1), self.getGURPSVersion())
 
     def getGURPSVersion(self):
@@ -220,7 +499,7 @@ class NPCBuilder(object):
 
         # apply power multiplier to stats
         if power != 1.0:
-            #print power, int(round(1 * power))
+            #print(power, int(round(1 * power)))
             for attribKey in ('stats', 'advantages'):
                 for key in statDict[attribKey]:
                     origValue = statDict[attribKey][key]
@@ -229,19 +508,19 @@ class NPCBuilder(object):
                         statDict[attribKey][key] = newValue
 
         # check for disad exclusion-criteria
-        keys = statDict['disadvantages'].keys()
+        keys = list(statDict['disadvantages'].keys())
         for disad in keys:
             if (disad in attribmap['skill-mods']) and ('exclusion-criteria' in attribmap['skill-mods'][disad]):
                 for adDisad in attribmap['skill-mods'][disad]['exclusion-criteria'].split(', '):
                     if (adDisad in statDict['advantages']) or (adDisad in statDict['disadvantages']):
-                        if statDict['disadvantages'].has_key(disad):
+                        if disad in statDict['disadvantages']:
                             del statDict['disadvantages'][disad]
 
         # now, populate self.mData's (dependant) raw data
-        for attribKey in NPCConstants.kMainAttribKeyOrder:
+        for attribKey in kMainAttribKeyOrder:
             self.mData[attribKey] = {}
 
-            if attribKey in NPCConstants.kMainAttributeKeys:
+            if attribKey in kMainAttributeKeys:
                 self.mData[attribKey] = statDict[attribKey]
             elif attribKey == 'appearance':
                 self.mData[attribKey]['height'], self.mData[attribKey]['weight'], self.mData[attribKey]['eyes'], self.mData[attribKey]['hair'], self.mData[attribKey]['age'] = self.getAppearance(statDict, gender)
@@ -253,7 +532,7 @@ class NPCBuilder(object):
             elif attribKey == 'quirks':
                 quirkVerbs = classType.getAttribSet('quirk-verbs')
                 quirkNouns = classType.getAttribSet('quirk-nouns')
-                quirkObjects = quirkNouns.keys()
+                quirkObjects = list(quirkNouns.keys())
                 #shuffle(quirkObjects)
                 quirks = []
                 for quirkVerb in quirkVerbs:
@@ -263,12 +542,12 @@ class NPCBuilder(object):
                 quirks.sort()
                 self.mData['quirks'] = quirks
 
-            elif attribKey in NPCConstants.kSkillAttributeKeys:
+            elif attribKey in kSkillAttributeKeys:
                 # populate self.mData with final values for these
                 attribSet = classType.getAttribSet(attribKey, attribmap[attribKey])
-                keys = attribSet.keys()
+                keys = list(attribSet.keys())
                 #@
-                #if attribKey == 'attributes': print attribSet
+                #if attribKey == 'attributes': print(attribSet)
                 for key in keys:
                     value = attribSet[key]
                     # increment basic skill costs before value add
@@ -289,27 +568,27 @@ class NPCBuilder(object):
                             self.addPreRequisite(classData, statDict, attribmap, power, key, key)
                 # now reconcile move/speed
                 if attribKey == 'attributes':
-                    ##print 'speed increased by: %s' % attribSet['speed']
+                    ##print('speed increased by: %s' % attribSet['speed'])
                     speed = self.mData['attributes']['speed']; move = int(self.mData['attributes']['move'])
                     if math.modf(speed)[0] == .75 and randint(0, 1):
-                        ##print 'speed ended in .75, so bumping and adjusting costs...'
+                        ##print('speed ended in .75, so bumping and adjusting costs...')
                         self.mData['attributes']['speed'] += .25; speed += .25
                         self.attributeCosts += 5
                         self.attribCostSet[0] += 5
                     if (int(speed) > move) and (attribSet['move'] != -1):
-                        ##print 'move was %s, now setting to %s' % (move, speed)
+                        ##print('move was %s, now setting to %s' % (move, speed))
                         self.mData['attributes']['move'] = speed
                     elif (int(speed) < move) and (attribSet['move'] != 1):
-                        ##print 'move was %s, now setting to %s' % (move, speed)
+                        ##print('move was %s, now setting to %s' % (move, speed))
                         self.mData['attributes']['move'] = speed
-                    ##print self.attribCostSet
+                    ##print(self.attribCostSet)
 
             elif attribKey == 'maneuvers' and classType.hasAttribSet(attribKey):
                 attribSet = classType.getAttribSet(attribKey, attribmap['skills'])
-                keys = attribSet.keys()
+                keys = list(attribSet.keys())
                 for key in keys:
                     value = attribSet[key]
-                    if not self.mData['skills'].has_key(key):
+                    if key not in self.mData['skills']:
                         self.addSkillCost(attribmap, key, value)
                     # add any maneuver prereqs...
                     if 'prereqs' in attribmap['skills'][key]:
@@ -318,10 +597,10 @@ class NPCBuilder(object):
                     statDict['skills'] = self.mData['skills']
                     value += self.getStatValue(attribmap, 'skills', key, statDict)
                     key = '*' + key
-                    if not self.mData['skills'].has_key(key):
+                    if key not in self.mData['skills']:
                         self.mData['skills'][key] = value
 
-            elif (attribKey in NPCConstants.kItemAttributeKeys) and classType.hasAttribSet(attribKey):
+            elif (attribKey in kItemAttributeKeys) and classType.hasAttribSet(attribKey):
                 if attribKey == 'weapons':
                     items = weapons
                 elif attribKey == 'armor':
@@ -370,10 +649,10 @@ class NPCBuilder(object):
                 self.mData[attribKey]['knifeDamSw'] = knifeDamSw
 
         # calculate final points now that all preReqs have been traversed
-        for attribKey in NPCConstants.kMainAttributeKeys:
-            for key, value in self.mData[attribKey].items():
+        for attribKey in kMainAttributeKeys:
+            for key, value in list(self.mData[attribKey].items()):
                 if attribKey == 'stats':
-                    self.statCosts += self.getStatCost(NPCConstants.kBaseStatCosts, key, value)
+                    self.statCosts += self.getStatCost(kBaseStatCosts, key, value)
                 elif attribKey == 'advantages':
                     self.advantageCosts += self.getStatCost(classData[attribKey], key, value)
                 elif attribKey == 'disadvantages':
@@ -429,19 +708,19 @@ class NPCBuilder(object):
 
         miscWeight = 0 #(randint(2, 20)) * .1
         self.mData['encumbrance']['total'] = self.mData['encumbrance']['armor'] + self.mData['encumbrance']['weapons'] + miscWeight
-        weightLevels = NPCConstants.kEncumbranceTable.keys()
+        weightLevels = list(kEncumbranceTable.keys())
         weightLevels.sort()
         # set defaults
         maxWeight = weightLevels[-1]
-        encumbranceLevel = NPCConstants.kEncumbranceTable[weightLevels[-1]]
+        encumbranceLevel = kEncumbranceTable[weightLevels[-1]]
         # check for lowest ('lightest') match
         for weightLevel in weightLevels:
             maxWeight = int(self.mData['stats']['strength']) * weightLevel
             if self.mData['encumbrance']['total'] <= maxWeight:
-                level, levelDesc = NPCConstants.kEncumbranceTable[weightLevel]
+                level, levelDesc = kEncumbranceTable[weightLevel]
                 if ('extra-encumbrance' in self.mData['advantages']) and (level > 1):
                     lMaxWeight = weightLevels[weightLevels.index(weightLevel) - 1]
-                    encumbranceLevel = ((level - 1), (NPCConstants.kEncumbranceTable[lMaxWeight][1] + '*'))
+                    encumbranceLevel = ((level - 1), (kEncumbranceTable[lMaxWeight][1] + '*'))
                 else:
                     encumbranceLevel = (level, levelDesc)
                 break
@@ -464,7 +743,7 @@ class NPCBuilder(object):
             else:
                 cost = statmap[index]
             if key in ('dexterity', 'intelligence'): cost *= 2
-            #if key in ('strength', 'dexterity', 'intelligence', 'health'): print '%s costs %s' % (key, cost)
+            #if key in ('strength', 'dexterity', 'intelligence', 'health'): print('%s costs %s' % (key, cost))
         else:
             try:
                 costs = []
@@ -473,7 +752,7 @@ class NPCBuilder(object):
                 elif 'cost' in statmap[key]:
                     cost = float(statmap[key]['cost'])
                 else:
-                    print '! cannot find %s %s' % (key, value)
+                    print(('! cannot find %s %s' % (key, value)))
                     cost = 1.333
                 # check for multi-level costs
                 if (len(costs) == 1):
@@ -484,10 +763,10 @@ class NPCBuilder(object):
                     else:
                         index = abs(value) - 1
                     cost = float(costs[index])
-                ##print '%s, at level %s, costs %s points' % (key, value, cost)
-            except Exception, why:
-                print why
-                print key, value, costs
+                ##print('%s, at level %s, costs %s points' % (key, value, cost))
+            except Exception as why:
+                print(why)
+                print((key, value, costs))
                 cost = 1.333
         return cost
 
@@ -500,20 +779,20 @@ class NPCBuilder(object):
             min -= 1;
 
         if ('intelligence' in stats) and (min > -4):
-            statCostTable = NPCConstants.kMentalSkillCosts
+            statCostTable = kMentalSkillCosts
         elif 'intelligence' in stats:
-            statCostTable = NPCConstants.kMentalVHSkillCosts
+            statCostTable = kMentalVHSkillCosts
         else:
-            statCostTable = NPCConstants.kPhysicalSkillCosts
+            statCostTable = kPhysicalSkillCosts
         index = value - min
         if index > (len(statCostTable) - 1):
             increment = statCostTable[-1] - statCostTable[-2]
             cost = statCostTable[-1] + (increment * (index - (len(statCostTable) - 1)))
         else:
             cost = statCostTable[index]
-        #print 'skill %s, at stat plus %s, costs %s points' % (skillKey, value, cost)
+        #print('skill %s, at stat plus %s, costs %s points' % (skillKey, value, cost))
         #if cost == .5:
-        #    print 'skill %s costs %s, therefore i am removing...' % (skillKey, cost)
+        #    print('skill %s costs %s, therefore i am removing...' % (skillKey, cost))
         #    del self.mData['skills'][skillKey]
         #else:
         self.skillCosts += cost
@@ -530,12 +809,12 @@ class NPCBuilder(object):
         'return (baseDamTh, baseDamSw, punchDam, kickDam, knifeDamTh, knifeDamSw)'
         # calc base damage
         strength                = int(self.mData['stats']['strength'])
-        if NPCConstants.kStrengthTable.has_key(strength):
-            thrust, swing            = NPCConstants.kStrengthTable[strength]
+        if strength in kStrengthTable:
+            thrust, swing            = kStrengthTable[strength]
         elif strength < 5:
-            thrust, swing            = NPCConstants.kStrengthTable[5]
+            thrust, swing            = kStrengthTable[5]
         elif strength > 26:
-            thrust, swing            = NPCConstants.kStrengthTable[26]
+            thrust, swing            = kStrengthTable[26]
             thrust                    = (thrust[0], thrust[1] + ((strength - 26) / 2))
             swing                    = (swing[0], swing[1] + (strength - 26))
 
@@ -551,7 +830,7 @@ class NPCBuilder(object):
         punchMod -= 2
 
         # change mods for skills/advantages        
-        for unarmedSkill, divisor in NPCConstants.kUnarmedSkillDivisorSets:
+        for unarmedSkill, divisor in kUnarmedSkillDivisorSets:
             if unarmedSkill in self.mData['skills']:
                 punchMod += int(self.mData['skills'][unarmedSkill] / divisor)
                 break
@@ -585,7 +864,7 @@ class NPCBuilder(object):
         'return (dodge, parry (unarmed and armed), block, base-dr)'
         # dodge
         dodge = int(self.mData['attributes']['speed']) + 3
-        for advantage in NPCConstants.kEnhancedDodgeModifiers:
+        for advantage in kEnhancedDodgeModifiers:
             if advantage in self.mData['advantages']:
                 if self.mData['advantages'][advantage]:
                     dodge += self.mData['advantages'][advantage]
@@ -601,7 +880,7 @@ class NPCBuilder(object):
         parry = int(skillMod * ratio) + 1
         parrySkillValue = skillMod
 
-        for skill in NPCConstants.kUnarmedParrySkills:
+        for skill in kUnarmedParrySkills:
             if skill in self.mData['skills']:
                 testSkillValue = int(self.mData['skills'][skill])
                 testparry = int(testSkillValue * ratio) + 3
@@ -615,9 +894,9 @@ class NPCBuilder(object):
         # parry ... find the best weapon parry
         weaponSkill = ''
         weaponParry = weaponSkillValue = 0
-        wSkillCache = Set()
+        wSkillCache = set()
         if 'weapons' in self.mData:
-            weapons = self.mData['weapons'].keys()
+            weapons = list(self.mData['weapons'].keys())
             weapons.sort()
             for weapon in weapons:
                 if (('skills' in self.mData['weapons'][weapon]) and \
@@ -638,7 +917,7 @@ class NPCBuilder(object):
                                 if (skill == 'knife') and ('mangosh' not in self.mData['weapons']):
                                     testValue -= 1
                                 if (testValue > weaponParry) or ((testValue == weaponParry) and (testSkillValue > weaponSkillValue)):
-                                    #print 'choosing %s parry: %s, because it is better than %s parry: %s' % \
+                                    #print('choosing %s parry: %s, because it is better than %s parry: %s' % \)
                                     #        (skill, testValue, weaponSkill, weaponParry)
                                     weaponParry = testValue
                                     weaponSkillValue = testSkillValue
@@ -647,7 +926,7 @@ class NPCBuilder(object):
 
         # mod the parryBonus for any appopriate advantages
         parryBonus = 0
-        for advantage in NPCConstants.kEnhancedParryModifiers:
+        for advantage in kEnhancedParryModifiers:
             if advantage in self.mData['advantages']:
                 if self.mData['advantages'][advantage]:
                     parryBonus += self.mData['advantages'][advantage]
@@ -658,7 +937,7 @@ class NPCBuilder(object):
         block = 0
         if 'shield' in self.mData['skills']:
             block = (self.mData['skills']['shield'] / 2) + 3
-            for advantage in NPCConstants.kEnhancedBlockModifiers:
+            for advantage in kEnhancedBlockModifiers:
                 if advantage in self.mData['advantages']:
                     if self.mData['advantages'][advantage]:
                         block += self.mData['advantages'][advantage]
@@ -667,7 +946,7 @@ class NPCBuilder(object):
 
         # base-dr
         baseDr = 0
-        for advantage in NPCConstants.kBaseDRModifiers:
+        for advantage in kBaseDRModifiers:
             if advantage in self.mData['advantages']:
                 if self.mData['advantages'][advantage]:
                     baseDr += self.mData['advantages'][advantage]
@@ -688,14 +967,14 @@ class NPCBuilder(object):
         'return (height, weight, eyes, hair, age) in formatted string tuple'
         # set st
         st = self.getStat(['strength'], statDict)
-        if st not in NPCConstants.kStrengthHeightMap:
+        if st not in kStrengthHeightMap:
             if st < 5:
                 st = 5
             else:
                 st = 26
 
         # get base height from st and randomize
-        height            = NPCConstants.kStrengthHeightMap[st] + randint(-2, 2) + randint(-2, 2)
+        height            = kStrengthHeightMap[st] + randint(-2, 2) + randint(-2, 2)
         if gender == 'female':
             height        -= 4
 
@@ -705,24 +984,24 @@ class NPCBuilder(object):
                 height *= modifier
 
         # now we can get weight based on height
-        weight            = NPCConstants.kHeightWeightMap[int(height)] + randint(-8, 10) + randint(-6, 8) + randint(-4, 4)
+        weight            = kHeightWeightMap[int(height)] + randint(-8, 10) + randint(-6, 8) + randint(-4, 4)
 
         # alter weight/ height(stocky) for appropriate disads
-        if statDict['disadvantages'].has_key('stocky'):
+        if 'stocky' in statDict['disadvantages']:
             if statDict['disadvantages']['stocky'] == -2:
                 height        *= .76
                 weight        *= 1.20
             else:
                 height        *= .95
                 weight        *= 1.10
-        if statDict['disadvantages'].has_key('overweight'):
+        if 'overweight' in statDict['disadvantages']:
             weight        *= 1.30
-        elif statDict['disadvantages'].has_key('fat'):
+        elif 'fat' in statDict['disadvantages']:
             if statDict['disadvantages']['fat'] == -1:
                 weight    *= 1.50
             elif statDict['disadvantages']['fat'] == -2:
                 weight    *= 2.0
-        elif statDict['disadvantages'].has_key('skinny'):
+        elif 'skinny' in statDict['disadvantages']:
             weight        *= (2/3.0)
 
         # put height and weight in pretty format
@@ -734,15 +1013,15 @@ class NPCBuilder(object):
         if self.mData['hair']:
             hair = choice(self.mData['hair'])
         else:
-            hair            = choice(NPCConstants.kHairColours)
+            hair            = choice(kHairColours)
         if self.mData['eyes']:
             eyes = choice(self.mData['eyes'])
         else:
-            eyes            = choice(NPCConstants.kEyeColours)
+            eyes            = choice(kEyeColours)
 
         # figure age
         age = self.getRandomDistribValue(self.mData['age'])
-        if statDict['disadvantages'].has_key('youth'):
+        if 'youth' in statDict['disadvantages']:
             age = 18 + statDict['disadvantages']['youth']
         for rkey in ('rank', 'paramilitary-rank'):
             if (rkey in statDict['advantages']) and statDict['advantages'][rkey]:
@@ -752,10 +1031,10 @@ class NPCBuilder(object):
             age = self.getRandomDistribValue('18~24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40~60')
 
         # check bald / white gray
-        if (hair in NPCConstants.kOldHair) and (age < 38):
+        if (hair in kOldHair) and (age < 38):
             # just get hair again -- i guess it's possible for young person to have gray hair
-            hair = choice(NPCConstants.kHairColours)
-        if (hair in NPCConstants.kBaldHair) and \
+            hair = choice(kHairColours)
+        if (hair in kBaldHair) and \
            ((gender == 'female') or (age < 30)):
             hair = 'brown'
 
@@ -765,8 +1044,7 @@ class NPCBuilder(object):
 
         result = []
         for trait in (height, weight, eyes, hair, age):
-            if type(trait) == type(''): result.append(unicode(trait, 'utf-8'))
-            else: result.append(trait)
+            result.append(trait)
         return tuple(result)
 
 
@@ -830,17 +1108,17 @@ class NPCBuilder(object):
                 statVal = int(self.getStat(['karate'], statDict, attribmap) * (2/3.0))
 
             else:
-                #if stat == 'animal-empathy': print attribmap['animal-empathy']
+                #if stat == 'animal-empathy': print(attribmap['animal-empathy'])
                 for attribDictKey in ('stats', 'advantages', 'disadvantages', 'skills'):
                     found = 0
-                    if statDict.has_key(attribDictKey):
+                    if attribDictKey in statDict:
                         statAttribDict = statDict[attribDictKey]
                         #if (attribDictKey is not 'skills') and attribDict.has_key(stat) and \
-                        if statAttribDict.has_key(stat) and \
-                           (attribmap and attribmap['skill-mods'].has_key(stat) and attribmap['skill-mods'][stat].has_key('skill-mod')):
+                        if stat in statAttribDict and \
+                           (attribmap and stat in attribmap['skill-mods'] and 'skill-mod' in attribmap['skill-mods'][stat]):
                             # this must be skill-mod type
                             skillMod = attribmap['skill-mods'][stat]['skill-mod']
-                            #if ('karate-parry' in statList): print skillMod, '!!'
+                            #if ('karate-parry' in statList): print(skillMod, '!!')
                             if skillMod == 'val':
                                 statVal += int(statAttribDict[stat])
                             elif skillMod[:4] == 'mult':
@@ -848,13 +1126,13 @@ class NPCBuilder(object):
                             else:
                                 statVal += int(skillMod)
                             found = 1; break
-                        elif statAttribDict.has_key(stat):
-                            #if attribDictKey != 'stats': print stat, 'implicit VAL found'
+                        elif stat in statAttribDict:
+                            #if attribDictKey != 'stats': print(stat, 'implicit VAL found')
                             statVal += statAttribDict[stat]
                             found = 1; break
 
                 #if not found:
-                #    print stat, 'NOT found AT ALL!!!!!!!!'
+                #    print(stat, 'NOT found AT ALL!!!!!!!!')
 
         return statVal
 
@@ -906,7 +1184,7 @@ class NPCBuilder(object):
                     # get static value
                     value = int(valueSet[0])
 
-            if optionalAdv and self.mData['advantages'].has_key(optionalAdv):
+            if optionalAdv and optionalAdv in self.mData['advantages']:
                 # self.mData has an optional advantage, this is sufficient
                 npcDataKey = 'advantages'
                 minValue = 0
@@ -933,11 +1211,11 @@ class NPCBuilder(object):
             # verify minValue
             if minValue     and (value < minValue):
                 value        = minValue
-            minValueReset    = minValue and self.mData[npcDataKey].has_key(preReqName) and (int(self.mData[npcDataKey][preReqName]) < minValue)
+            minValueReset    = minValue and preReqName in self.mData[npcDataKey] and (int(self.mData[npcDataKey][preReqName]) < minValue)
 
             # check to see if this preReq change affects existing skills
             if npcDataKey == 'advantages' and minValueReset:
-                for skillName in self.mData['skills'].keys():
+                for skillName in list(self.mData['skills'].keys()):
                     localStatList = attribmap['skills'][skillName]['stat'].split(', ')
                     if localStatList.count(preReqName):
                         backValue = value
@@ -946,7 +1224,7 @@ class NPCBuilder(object):
                         self.mData['skills'][skillName] += backValue
 
             # finally,  add this preReq ...
-            if (not self.mData[npcDataKey].has_key(preReqName)) or minValueReset:
+            if (preReqName not in self.mData[npcDataKey]) or minValueReset:
                 self.mData[npcDataKey][preReqName] = value
 
 
@@ -960,7 +1238,6 @@ class NPCBuilder(object):
 
 
     def DisplayRaw(npc, mode=0):
-        'print raw self.mData data'
         pp = PrettyPrinter(indent=4)
         pp.pprint(npc.mData)
     DisplayRaw = staticmethod(DisplayRaw)
@@ -974,7 +1251,7 @@ class NPCBuilder(object):
             encoding = 'mac_latin2'
         else:
             encoding = 'cp437'
-        print NPCBuilder.GetTextDisplay(npc, mode)
+        print((NPCBuilder.GetTextDisplay(npc, mode)))
     DisplayText = staticmethod(DisplayText)
 
     def DisplayHTML(npc, mode=0):
@@ -984,13 +1261,12 @@ class NPCBuilder(object):
             encoding = 'mac_latin2'
         else:
             encoding = 'cp437'
-        print NPCBuilder.GetHTMLDisplay(npc, mode)
+        print((NPCBuilder.GetHTMLDisplay(npc, mode)))
     DisplayHTML = staticmethod(DisplayHTML)
 
 
     def GetTextDisplay(npc, mode):
-        'print self.mData string; mode=0 is default, which is to DOS screen'
-        doubleLine = u'_' * (kPageWidth)
+        doubleLine = '_' * (kPageWidth)
         font = bold = color = blue = mblue = red = ''
         if mode:
             font = '[wxFont:Arial]'
@@ -999,15 +1275,15 @@ class NPCBuilder(object):
             mblue = '[wxColor:MEDIUM BLUE]'
             red  = '[wxColor:RED]'
         if npc.mData['number'] > 1:
-            npcString = u'%s%s%s' % (bold, doubleLine, bold)
+            npcString = '%s%s%s' % (bold, doubleLine, bold)
         else:
-            npcString = u''
+            npcString = ''
         npcString += '\n%s%s%s\t\t%s points\n\n' % (font, npc.getTitle(), font, npc.getTotalPoints())
 
         # populate keySets
-        adKeys = npc.mData['advantages'].keys()
+        adKeys = list(npc.mData['advantages'].keys())
         adKeys.sort()
-        disadKeys = npc.mData['disadvantages'].keys()
+        disadKeys = list(npc.mData['disadvantages'].keys())
         disadKeys.sort()
         quirkKeys = [quirk for quirk in npc.mData['quirks']]
         keySets = (adKeys, disadKeys, quirkKeys)
@@ -1023,18 +1299,18 @@ class NPCBuilder(object):
         # loop thru each attribKey and set in specific order
         odd = 0
         origkeys = []
-        for attribKey in NPCConstants.kDisplayAttribKeyOrder:
+        for attribKey in kDisplayAttribKeyOrder:
             if odd:
                 npcString += '\n'; odd = 0
 
             if attribKey == 'advantages/disadvantages/quirks':
                 origkeys = [listItem for listSet in keySets for listItem in listSet]                
             elif attribKey == 'stats/secondary stats':
-                origkeys = NPCConstants.kStatAttribKeyOrder
+                origkeys = kStatAttribKeyOrder
             elif attribKey == 'appearance':
-                origkeys = NPCConstants.kAppearanceKeyOrder
+                origkeys = kAppearanceKeyOrder
             else:
-                origkeys = npc.mData[attribKey].keys()
+                origkeys = list(npc.mData[attribKey].keys())
                 origkeys.sort()
 
             # column-sort the keys...
@@ -1042,9 +1318,9 @@ class NPCBuilder(object):
             position = 0
             # make origkeys Even
             lenDivisor = 2
-            if attribKey in NPCConstants.kThreeColumnHeadings:
+            if attribKey in kThreeColumnHeadings:
                 lenDivisor = 3
-            if (len(origkeys) % lenDivisor) and attribKey not in NPCConstants.kItemAttributeKeys:
+            if (len(origkeys) % lenDivisor) and attribKey not in kItemAttributeKeys:
                 origkeys.append('')
                 if (len(origkeys) % lenDivisor):
                     origkeys.append('')
@@ -1055,10 +1331,10 @@ class NPCBuilder(object):
                     keys.append(origkeys[(2 * (len(origkeys) / lenDivisor)) + position])
                 position += 1
 
-            # print spacer/set Title-headers
+            # print(spacer/set Title-headers)
             if keys or origkeys:
                 dashCharacter = '_'
-                if attribKey in NPCConstants.kNonSkillAttributeKeys:
+                if attribKey in kNonSkillAttributeKeys:
                     titles = attribKey.split('/')
                     firstSpacer        = dashCharacter * ((kPageWidth / 3) - (len(titles[0]) + 1))
                     secondSpacer    = dashCharacter * (kPageWidth - (len(titles[1]) + 2 + (kPageWidth / 3)))
@@ -1092,18 +1368,18 @@ class NPCBuilder(object):
                 npcString +=  '      punch:  th %sd%s ' % npc.mData[attribKey]['punchDam']
                 npcString +=  ' kick: th %sd%s \n' % npc.mData[attribKey]['kickDam']
 
-            elif attribKey in NPCConstants.kItemAttributeKeys:
-                # print item(s) stats, uniqueness
+            elif attribKey in kItemAttributeKeys:
+                # print(item(s) stats, uniqueness)
                 for key in origkeys:
                     item = npc.mData[attribKey][key]
-                    for wattrib in NPCConstants.kItemKeyOrder:
-                        if item.has_key(wattrib):
+                    for wattrib in kItemKeyOrder:
+                        if wattrib in item:
                             value = item[wattrib]
 
                             if wattrib == 'name':
                                 wName = item[wattrib]
                                 npcString +=  '%-26s' % wName
-                            elif wattrib in NPCConstants.kNewLineModItemKeys:
+                            elif wattrib in kNewLineModItemKeys:
                                 if wattrib == '*mod0':
                                     init = '*'
                                 else:
@@ -1192,18 +1468,18 @@ class NPCBuilder(object):
                     # format for printing
                     if not value:
                         # HACK (for value: 0)
-                        if key in NPCConstants.kZeroValueAttributes:
+                        if key in kZeroValueAttributes:
                             screenValue = key + ': 0'
                         else:
                             screenValue = key
                     elif key == 'move':
                         screenValue = '%s [enc]: %s[%s]' % (key, int(value), int(value - npc.mData['encumbrance']['level'][0]))
-                    elif mode and key in NPCConstants.kMainStatKeys:
+                    elif mode and key in kMainStatKeys:
                         screenValue = '%s%s%s: %s' % (mblue, key.capitalize(), mblue, value)
                     else:
                         screenValue = key + ': ' + str(value)
 
-                    if attribKey in NPCConstants.kThreeColumnHeadings:
+                    if attribKey in kThreeColumnHeadings:
                         if odd != 2:
                             if mode and mblue in screenValue:
                                 npcString +=  '%-72s' % screenValue; odd += 1
@@ -1310,39 +1586,37 @@ class NPCBuilder(object):
         # setup path and header specific stuff...
         rootDir = GetRootDir()
         if prependHTMLHeaders:
-            styleLink = NPCConstants.kNPCGenCSSLink % rootDir
+            styleLink = kNPCGenCSSLink % rootDir
             if useWebKitPaths:
-                styleLink = NPCConstants.kNPCGenCSSLink % 'http://ayinger.no-ip.info/images'
-            templateString = unicode('', 'utf-8')
+                styleLink = kNPCGenCSSLink % 'http://ayinger.no-ip.info/images'
+            templateString = ''
             # <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/> <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-            templateString += '%s\n<html>\n<head>\n  %s\n  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n</head>\n' % (NPCConstants.kNPCGenHTMLDocType, styleLink)
-            localDict['webLink'] = unicode('<A HREF="http://ayinger.no-ip.info/NPCGen/NPCGen"><B>NPCGen online</B></A>', 'utf-8')
+            templateString += '%s\n<html>\n<head>\n  %s\n  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n</head>\n' % (kNPCGenHTMLDocType, styleLink)
+            localDict['webLink'] = '<A HREF="http://ayinger.no-ip.info/NPCGen/NPCGen"><B>NPCGen online</B></A>'
         else:
-            templateString = unicode('', 'utf-8')
-            localDict['webLink'] = unicode('<A HREF="http://ayinger.no-ip.info/NPCGen/NPCGenEmail"><B>Email this NPC</B></A>', 'utf-8')
+            templateString = ''
+            localDict['webLink'] = '<A HREF="http://ayinger.no-ip.info/NPCGen/NPCGenEmail"><B>Email this NPC</B></A>'
 
         if useWebKitPaths:
             templateRootPath = './html/'
             localDict['imagePath'] ='"http://ayinger.no-ip.info/images/pics/%s"' % npc.getImage()
-            localDict['gimagePath'] = unicode('"http://ayinger.no-ip.info/images/GURPS.gif"', 'utf-8')
+            localDict['gimagePath'] = '"http://ayinger.no-ip.info/images/GURPS.gif"'
         else:
             templateRootPath = rootDir + os.sep
             localDict['imagePath'] = '"' + rootDir + os.sep + 'images/pics' + os.sep + npc.getImage() + '"'
-            localDict['gimagePath'] = unicode('"' + rootDir + os.sep + 'images' + os.sep + 'GURPS.gif' + '"', 'utf-8')
+            localDict['gimagePath'] = '"' + rootDir + os.sep + 'images' + os.sep + 'GURPS.gif' + '"'
 
-        # load string from template and replace namefile = codecs.open(fullPath, 'rU', 'utf-8')
         templateFile = codecs.open(templateRootPath + kNPCTemplateFileName, 'rU', 'utf-8')
-        #print loads(decompress(localDict['npc'].encode('latin1')))
+        #print(loads(decompress(localDict['npc'].encode('latin1'))))
         templateString += templateFile.read()
-        if templateString.startswith(kuBOM): templateString = templateString.lstrip(kuBOM)
         templateFile.close()
         #result = templateString % localDict
         #localDict['npc'] = ''
         #for key in localDict:
-        #    #print type(key), type(localDict[key])
-        #    if type(localDict[key]) == type(''): print 'key %s value %s is only string' % (key, localDict[key])
+        #    #print(type(key), type(localDict[key]))
+        #    if type(localDict[key]) == type(''): print('key %s value %s is only string' % (key, localDict[key]))
         result = templateString % localDict
-        #print type(result)
+        #print(type(result))
         return result
     GetHTMLDisplay = staticmethod(GetHTMLDisplay)
 
@@ -1378,7 +1652,7 @@ class NPCBuilder(object):
         swingDice, swingMod = swingSet
         punchDice, punchMod = punchSet
         kickDice, kickMod = kickSet
-        damageSetString = unicode('Thrust: %sd%s<BR>Swing: %sd%s<BR><BR>Punch: %sd%s<BR>Kick: %sd%s', 'utf-8') % \
+        damageSetString = 'Thrust: %sd%s<BR>Swing: %sd%s<BR><BR>Punch: %sd%s<BR>Kick: %sd%s' % \
                             (thrustDice, thrustMod, swingDice, swingMod, punchDice, punchMod, kickDice, kickMod)
         return {'DAMAGESET': damageSetString}
     GetDamageSetsDict = staticmethod(GetDamageSetsDict)
@@ -1426,7 +1700,7 @@ class NPCBuilder(object):
         total = 0
         armorStatKeys = ('name', 'pd', 'dr', 'area', 'weight')
         armorString = ''
-        armors = npc.mData['armor'].items()
+        armors = list(npc.mData['armor'].items())
         armors.sort()
         for armorKey, armor in armors:
             armor = armor.copy()
@@ -1450,7 +1724,7 @@ class NPCBuilder(object):
                         <TR><TD WIDTH=45%s>&nbsp;&nbsp;&nbsp;<FONT COLOR=#3333CC>%s</FONT></TD><TD></TD><TD></TD><TD></TD><TD></TD></TR>''' % ('%', armorModString[:-22])
 
         equipString = ''
-        equip = npc.mData['weapons'].items()
+        equip = list(npc.mData['weapons'].items())
         equip.sort()
         for equipKey, equipment in equip:
             equipment = equipment.copy()
@@ -1489,7 +1763,7 @@ class NPCBuilder(object):
         weaponString = ''
         weaponStatKeys = ('name', 'dam', 'st', 'rch', 'note')
         rangedWeaponString = ''
-        weapons = npc.mData['weapons'].items()
+        weapons = list(npc.mData['weapons'].items())
         weapons.sort()
         for weaponKey, weapon in weapons:
             weapon = weapon.copy()
@@ -1572,7 +1846,7 @@ class NPCBuilder(object):
     def GetAdvantagesDict(npc):
         localDict = NPCBuilder.GetKeyDict(npc, 'advantages')
         total = 0
-        for value in localDict.values():
+        for value in list(localDict.values()):
             total += value.count('<TR>')
         return (total, localDict)
     GetAdvantagesDict = staticmethod(GetAdvantagesDict)
@@ -1585,7 +1859,7 @@ class NPCBuilder(object):
         localDict = NPCBuilder.GetKeyDict(npc, 'quirkSet')
         localDict.update(NPCBuilder.GetKeyDict(npc, 'disadvantages'))
         total = 0
-        for value in localDict.values():
+        for value in list(localDict.values()):
             total += value.count('<TR>')
         return (total, localDict)
     GetDisAdvantagesDict = staticmethod(GetDisAdvantagesDict)
@@ -1593,14 +1867,14 @@ class NPCBuilder(object):
 
     def GetKeyDict(npc, key):
         keyString = ''
-        keys = npc.mData[key].keys()
+        keys = list(npc.mData[key].keys())
         keys.sort()
         for keyName in keys:
             value = abs(npc.mData[key][keyName])
             if not value:
                 value = ''
             # HACK (for value: 0)
-            if (keyName in NPCConstants.kZeroValueAttributes) and not value:
+            if (keyName in kZeroValueAttributes) and not value:
                 value = 0
             keyString += '''
                 <TR><TD WIDTH=90%s ALIGN=LEFT>%s</TD><TD WIDTH=10%s ALIGN=RIGHT>%s</TD></TR>''' % ('%', keyName, '%', value)

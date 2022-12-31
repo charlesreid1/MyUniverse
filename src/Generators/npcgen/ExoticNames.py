@@ -1,5 +1,3 @@
-#!/c/Python22/python
-
 """
  *******************************************************************************
  * 
@@ -18,13 +16,14 @@
 """
 
 from random import choice
-from sets import ImmutableSet
 
-from Utils import RandInt
+from .Utils import GetRootDir, kTimeZoneDifference
+
+from .Utils import RandInt
 
 
 # constants
-kSyllableRange = ImmutableSet((1, 2, 3))
+kSyllableRange = frozenset((1, 2, 3))
 
 kVowells = ('a', 'e', 'i', 'o', 'u', 'y', 'ae', 'ei', 'ou', 'au', 'ui', 'uo', 'oo', 'ee', 'ea', 'ie', 'ye', 'uy', 'ua', 'ue',
             'a', 'e', 'i', 'o', 'u', 'e', 'e', 'e', 'a', 'i', 'i', 'i')
@@ -49,7 +48,7 @@ kSyllableMap =    {
 def GetSyllable():
     roll = RandInt(1, 53)
     # increment roll until it is a dictionary key
-    while not kSyllableMap.has_key(roll):
+    while roll not in kSyllableMap:
         roll += 1
 
     syllable = ''
@@ -81,7 +80,7 @@ def GetName():
     else:
         result = result[:-1]
 
-    return unicode(result, 'UTF-8')
+    return str(result, 'UTF-8')
 
 
 def GetExoticName():
@@ -95,7 +94,7 @@ def GetExoticName():
 
 if __name__ == '__main__':
     for n in range(24):
-        print GetExoticName()
+        print((GetExoticName()))
 
 """
  *******************************************************************************

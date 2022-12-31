@@ -21,7 +21,8 @@ multop = oneOf('* /')
 plusop = oneOf('+ -')
 fnop = Group(POINT + fn + LPAR + args + RPAR) 
 
-expr = operatorPrecedence( atom,
+# https://stackoverflow.com/a/19441116
+expr = infixNotation( atom,
     [(signop, 1, opAssoc.RIGHT),
      (multop, 2, opAssoc.LEFT),
      (plusop, 2, opAssoc.LEFT),]
@@ -94,5 +95,5 @@ if __name__ == "__main__":
 	#~ test = 'D5+2d6*3-5.5+4d6'
 	results = expr.parseString(test)
 
-	print results
-	print evalExpr(results)
+	print(results)
+	print(evalExpr(results))

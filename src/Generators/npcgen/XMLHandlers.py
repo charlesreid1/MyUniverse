@@ -1,5 +1,3 @@
-#!/c/Python22/python
-
 """
  *******************************************************************************
  * 
@@ -18,14 +16,13 @@
  *******************************************************************************
 """
 
-import os, os.path, sha
-from sets import ImmutableSet
+import os, os.path
 from xml.sax import handler, make_parser, parse, ContentHandler
 from pprint import PrettyPrinter
 from time import timezone
 
-from ClassData import ClassType
-from Utils import GetRootDir, kTimeZoneDifference
+from .ClassData import ClassType
+from .Utils import GetRootDir, kTimeZoneDifference
 
 
 kServerTimeZoneOffset = 18000 # need this because winzip is annoying
@@ -35,13 +32,13 @@ kRootDir                = GetRootDir()
 kMetaConfigFilePath        = '%s%s%s%s%s' % (kRootDir, '/', 'cfg', '/', 'meta-config.xml')
 
 # static tag Sets
-kAttributeSetTypes    = ImmutableSet(('stats', 'attributes', 'advantages', 'disadvantages', 'quirk-verbs', 'quirk-nouns', 'skills', 'maneuvers', 'weapons', 'armor'))
-kDependencyTags        = ImmutableSet(('attributes', 'skills', 'skill-mods'))
-kMetaConfigKeyTags    = ImmutableSet(('class-file-sets', 'attribute-rules', 'weapons-data', 'armor-data', 'nationality-name-file-sets'))
-kMetaConfigSetTags    = ImmutableSet(('class-file-sets', 'nationality-name-file-sets'))
-kItemAttribTags        = ImmutableSet(('weapons', 'weapon-stats', 'weapon-mods', 'hand-weapon-mods', 'armor', 'armor-stats', 'armor-mods'))
-kItemModTags        = ImmutableSet(('weapon-mods', 'armor-mods'))
-kRangeTags            = ImmutableSet(('min', 'max'))
+kAttributeSetTypes    = frozenset(('stats', 'attributes', 'advantages', 'disadvantages', 'quirk-verbs', 'quirk-nouns', 'skills', 'maneuvers', 'weapons', 'armor'))
+kDependencyTags        = frozenset(('attributes', 'skills', 'skill-mods'))
+kMetaConfigKeyTags    = frozenset(('class-file-sets', 'attribute-rules', 'weapons-data', 'armor-data', 'nationality-name-file-sets'))
+kMetaConfigSetTags    = frozenset(('class-file-sets', 'nationality-name-file-sets'))
+kItemAttribTags        = frozenset(('weapons', 'weapon-stats', 'weapon-mods', 'hand-weapon-mods', 'armor', 'armor-stats', 'armor-mods'))
+kItemModTags        = frozenset(('weapon-mods', 'armor-mods'))
+kRangeTags            = frozenset(('min', 'max'))
 
 
 # custom xml handlers
@@ -58,7 +55,7 @@ class MetaConfigHandler(ContentHandler):
             if tag not in kMetaConfigSetTags:
                 # this is some other (non-list) file type...
                 localDict = {}
-                for dataPair in attrs.items():
+                for dataPair in list(attrs.items()):
                     name, value = dataPair
                     localDict[name] = value
 
@@ -67,13 +64,13 @@ class MetaConfigHandler(ContentHandler):
         elif tag == 'files':
             # this is a set of class-data files
             localDict = {}
-            for dataPair in attrs.items():
+            for dataPair in list(attrs.items()):
                 name, value = dataPair
                 if name == 'file-paths':
                     value = value.split(', ')
                 localDict[name] = value
 
-            if self.mMetaConfigMap.has_key(self.mMetaConfigKey):
+            if self.mMetaConfigKey in list(self.mMetaConfigMap.keys()):
                 self.mMetaConfigMap[self.mMetaConfigKey].append(localDict)
             else:
                 self.mMetaConfigMap[self.mMetaConfigKey] = [localDict]
@@ -81,7 +78,7 @@ class MetaConfigHandler(ContentHandler):
         elif tag != 'xml-files':
             # this is a set of name data files
             localDict = {}
-            for dataPair in attrs.items():
+            for dataPair in list(attrs.items()):
                 name, value = dataPair
                 if name == 'file-paths':
                     value = value.split(', ')
@@ -108,7 +105,7 @@ class ClassHandler(ContentHandler, handler.DTDHandler):
 
     def startElement(self, tag, attrs):
         if tag == 'class':
-            self.mClassType = ClassType(attrs.items(), self.mGenreKey, self.mClassFilePath)
+            self.mClassType = ClassType(list(attrs.items()), self.mGenreKey, self.mClassFilePath)
             # add to classes maps
             self.mClasses[self.mClassType.getAlias()] = self.mClassType
             self.mGenreMap[self.mGenreKey].append(self.mClassType)
@@ -116,27 +113,27 @@ class ClassHandler(ContentHandler, handler.DTDHandler):
         elif tag in kAttributeSetTypes:
             # this is a set of attributes
             self.mAttributeSetTag = tag
-            self.mClassType.addAttribSet(self.mAttributeSetTag, attrs.items())
+            self.mClassType.addAttribSet(self.mAttributeSetTag, list(attrs.items()))
         elif tag != 'classes':
             # this an attribute, the most primitive (at deepest xml level)
-            self.mClassType.addAttrib(self.mAttributeSetTag, tag, attrs.items())
+            self.mClassType.addAttrib(self.mAttributeSetTag, tag, list(attrs.items()))
         else:
             # classes, top level definition
-            for dataPair in attrs.items():
+            for dataPair in list(attrs.items()):
                 name, value = dataPair
                 if name == 'genre':
                     self.mGenreKey = value
-                    if not self.mGenreMap.has_key(self.mGenreKey):
+                    if self.mGenreKey not in list(self.mGenreMap.keys()):
                         self.mGenreMap[self.mGenreKey] = []
 
     def skippedEntity(self, tag):
-        print 'skippedEntity tag: %s' % tag
+        print(('skippedEntity tag: %s' % tag))
 
     def notationDecl(self, name, publicId, systemId):
-        print 'notationDeclaration %s %s %s' % (name, publicId, systemId)
+        print(('notationDeclaration %s %s %s' % (name, publicId, systemId)))
 
     def unparsedEntityDecl(self, name, publicId, systemId, ndata):
-        print 'unparsedEntityDeclaration %s %s %s %s' % (name, publicId, systemId, ndata)
+        print(('unparsedEntityDeclaration %s %s %s %s' % (name, publicId, systemId, ndata)))
 
 
 class AttributeDependencyHandler(ContentHandler):
@@ -149,10 +146,10 @@ class AttributeDependencyHandler(ContentHandler):
         if (tag in kDependencyTags):
             # this is a set of attributes
             self.mAttributeSetTag = tag
-            self.mAttributes.addAttribSet(tag, attrs.items())
+            self.mAttributes.addAttribSet(tag, list(attrs.items()))
         elif (tag != 'attribute-bases'):
             # this an attribute, the most primitive (at deepest xml level)
-            self.mAttributes.addAttrib(self.mAttributeSetTag, tag, attrs.items())
+            self.mAttributes.addAttrib(self.mAttributeSetTag, tag, list(attrs.items()))
 
 
 class ItemHandler(ContentHandler):
@@ -167,10 +164,10 @@ class ItemHandler(ContentHandler):
         if tag not in kItemAttribTags:
             # this an attribute, the most primitive (at deepest xml level)
             self.mAttribute = tag
-            self.mAttributeProperties = attrs.items()
+            self.mAttributeProperties = list(attrs.items())
         elif tag in kItemModTags:
             self.mHandMod = 0
-            for dataPair in attrs.items():
+            for dataPair in list(attrs.items()):
                 name, value = dataPair
                 if name == 'mod-inc':
                     self.mItemTable.mModInc = int(value)
@@ -209,7 +206,7 @@ def GetFilePathFromMap(configMap):
     attribFilePaths = []
     pathInfix = configMap['path-infix']
 
-    if configMap.has_key('file-path'):
+    if 'file-path' in list(configMap.keys()):
         basePaths  = [configMap['file-path']]
     else:
         # multi-path
@@ -235,7 +232,7 @@ def GetShaSum(spath):
         sfile = file(spath, 'rb')
         contents = sfile.read()
         sfile.close()
-        shaobj = sha.new(contents)
+        shaobj = hashlib.new(contents)
         shahex = shaobj.hexdigest()
     return shahex
 

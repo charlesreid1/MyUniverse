@@ -1,5 +1,4 @@
-
-from tablegen import table
+from .tablegen import table
 from state import *
 
 class StateGenerator:

@@ -8,12 +8,75 @@ import random as rand
 import imp
 import csv
 from optparse import OptionParser
-import tableFunctions
+
+###########################################
+
+import inflect
+
+from .dice import dice as roll
+from .eval import evalString
+
+def tf_eval(l):
+    #print 'eval ', l
+    if len(l) == 1:
+        return str(evalString(l[0]))
+    else:
+        pass
+    return ''
+
+def ucfirst(l):
+    if len(l) == 1:
+        return l[0].upper()
+    else:
+        pass
+    return ''
+
+def lc(l):
+    if len(l) == 1:
+        return l[0].lower()
+    else:
+        pass
+    return ''
+
+def plural(l):
+    p = inflect.engine()
+    if len(l) == 1:
+        return p.plural(l[0])
+    else:
+        pass
+    return ''
+    
+def article(l):
+    p = inflect.engine()
+    if len(l) == 1:
+        return p.an(l[0])
+    else:
+        pass
+    return ''
+    
+def ia(l):
+    p = inflect.engine()
+    if len(l) == 1:
+        return p.inflect(l[0])
+    else:
+        pass
+    return ''
+
+def dice(l):
+    s = str(roll(l[0].encode('ascii', 'ignore')))
+    #pass
+    return s
+
+def junk(l):
+    return 'junk'
+
+############################################
+
 import pyparsing
 import sqlite3 as lite
 import sys
 import codecs
-from server import server
+#from server import server
 
 def walktree(top, callback, load=False):
     for filename in os.listdir(top):
@@ -26,11 +89,12 @@ def walktree(top, callback, load=False):
             # It's a file, call the callback function
             callback(pathname, load)
         else:
-            # Unknown file type, print a message
-            print 'Skipping %s' % pathname
+            # Unknown file type, pass
+            pass
 
 
 class Table(object):
+
     def __init__(self, tablename, continuous, csvflag=False):
         self.values = dict()
         self.index = 0
@@ -128,7 +192,7 @@ class tableDB(object):
                 else:
                     retVal = l[column].strip()
             return retVal
-        print >> sys.stderr, 'Error: *** No [' + t + '] Table***'
+        #print >> sys.stderr, 'Error: *** No [' + t + '] Table***'
         return ''
     def get_random_index(self, t='Start'):
         if t in self.length:
@@ -228,7 +292,8 @@ class tableFile(object):
         elif m10: #pragma declaration
             pass
         else:
-            print >> sys.stderr, 'Error: unidentified line ' + self.filename + ' - ' + line
+            #print >> sys.stderr, 'Error: unidentified line ' + self.filename + ' - ' + line
+            pass
     def template(self, template):
         templateFile = os.path.dirname(self.filename) + '/' + template + '.tml'
         self.stack[template] = ''
@@ -239,12 +304,12 @@ class tableFile(object):
     def run(self, t='Start', roll=-1, column=0):
         if self.table.get(t):
             return self.table[t].roll(column=column, roll=roll)
-        print >> sys.stderr, 'Error: *** No [' + t + '] Table***'
+        #print >> sys.stderr, 'Error: *** No [' + t + '] Table***'
         return ''
     def rundict(self, t='Start', roll=-1):
         if self.table.get(t):
             return self.table[t].rolldict(roll=roll)
-        print >> sys.stderr, 'Error: *** No [' + t + '] Table***'
+        #print >> sys.stderr, 'Error: *** No [' + t + '] Table***'
         return ''
     def start(self):
         self.currentstack = dict()
@@ -291,10 +356,11 @@ class tableFile(object):
                         index = index + 1
                         value = value.replace('"', '\'')
                 else:
-                    print self.table[i].values[j].__class__.__name__
+                    #print self.table[i].values[j].__class__.__name__
+                    pass
                 cur.execute("INSERT INTO TableLines VALUES(\"%s\", \"%s\", %d, \"%s\")" % (table, i, j, value))
         for k in self.stack:
-            print 'variable', k, self.stack[k]
+            #print 'variable', k, self.stack[k]
             value = self.stack[k].replace('"', '\'')
             cur.execute("INSERT INTO TableVariables VALUES(\"%s\", \"%s\", \"%s\")" % (table, k, value))
 
@@ -357,7 +423,8 @@ class tableMgr(object):
             if self.tfilename.get(tablename):
                 self.loadtable(tablename)
             else:
-                print >> sys.stderr, 'Error: *** Table \'' + tablename + '\' Not found ***'
+                #print >> sys.stderr, 'Error: *** Table \'' + tablename + '\' Not found ***'
+                pass
     def filename(self, tablename):
         return self.tfilename[tablename]
     def groups(self):
@@ -374,7 +441,7 @@ class tableMgr(object):
                                 pyparsing.ZeroOrMore(ret | content) + pyparsing.Suppress(closer))
         return ret
     def parse(self, table, exp):
-        print exp
+        #print exp
         ret = ''
         last = 0
         nestedItems = self.nestedExpr("{{", "}}")
@@ -465,7 +532,7 @@ class tableMgr(object):
         r1 = re.compile(r'(.*?)(\:|[|]|~)(.*)')
         m = r1.match(l[0])
         if m == None:
-            print 'malformed function'
+            #print 'malformed function'
             return ''
         f = m.group(1)
         l[0] = m.group(3)
@@ -479,7 +546,7 @@ class tableMgr(object):
         elif f == "if":
             logic = list()
             logic.append(self.parse(table, n[0]))
-            if tableFunctions.eval(logic) == "True":
+            if tf_eval(logic) == "True":
                 s = s + self.parse(table, n[1])
         elif f == "assign":
             self.tfile[table].setVariable(n[0], self.parse(table, n[1]))
@@ -489,12 +556,26 @@ class tableMgr(object):
                 p.append(self.parse(table, i))
             #print s
             #print f, p
-            s = s + getattr(tableFunctions, f)(p)
+            tf_map = {
+                'eval': tf_eval,
+                'ucfirst': ucfirst,
+                'lc': lc,
+                'plural': plural,
+                'article': article,
+                'ia': ia,
+                'dice': dice,
+                'junk': junk
+            }
+            handle = tf_map[f]
+            s = s + handle(p)
         return s
-    def roll(self, table):
+    def roll(self, table=None):
+        ### print("------------------------------------------------")
+        ### print("\n".join(self.tfile.keys()))
         self.checkload(table)
         s = self.tfile[table].start()
         #print '\nroll = ', s
+        s = str(s)
         s = self.parse(table, s)
         return s
     def run(self, table, sub='Start', roll=-1, column=0):
@@ -506,6 +587,8 @@ class tableMgr(object):
         self.checkload(table)
         s = self.tfile[table].rundict(sub, roll)
         return s
+    def getRandomIndex(self, *args, **kwargs):
+        return self.get_random_index(*args, **kwargs)
     def get_random_index(self, table, sub="Start"):
         self.checkload(table)
         return self.tfile[table].get_random_index(sub)
@@ -553,14 +636,9 @@ class tableMgr(object):
         cur.execute("CREATE TABLE TableVariables(TableName TEXT, Name TEXT, Value TEXT)")
         cur.execute("CREATE TABLE TableLines(TableName TEXT, SubTableName TEXT, Roll INT, Line TEXT)")
         cur.execute("CREATE TABLE Tables(Genre TEXT, TableName TEXT, SubTableName TEXT, Type TEXT, Length INT)")
-        #cur.execute("CREATE TABLE Tables(TableName TEXT, SubTableName TEXT, Length INT)")
-        #for t in self.tfile:
-        #    print 'table - ' + t
-        #    if self.tfilename[t][-3:] == 'tab':
-        #        self.tfile[t].importTable(t, cur)
         for g in self.group:
             for t in self.group[g]:
-                print g, '-', t
+                #print g, '-', t
                 if self.tfilename[t][-3:] == 'tab':
                     self.tfile[t].importTable(g, t, cur)
         con.commit()
@@ -595,7 +673,7 @@ def testcallback(option, opt, value, parser, *args, **kwargs):
     #print parser.values
     #print args
     #print kwargs
-    print parser.values.datadir
+    #print parser.values.datadir
     t = tableMgr()
     walktree(parser.values.datadir, t.addfile, load=True)
     #t.importTables()
@@ -611,13 +689,13 @@ def importcallback(option, opt, value, parser, *args, **kwargs):
     #print parser.values
     #print args
     #print kwargs
-    print parser.values.datadir
+    #print parser.values.datadir
     t = tableMgr()
     walktree(parser.values.datadir, t.addfile, load=True)
     t.importTables()
 
 def allcallback(option, opt, value, parser, *args, **kwargs):
-    print parser.values.datadir
+    #print parser.values.datadir
     t = tableMgr()
     walktree(parser.values.datadir, t.addfile, load=True)
     #t.importTables()
@@ -625,7 +703,7 @@ def allcallback(option, opt, value, parser, *args, **kwargs):
 
 
 def listencallback(option, opt, value, parser, *args, **kwargs):
-    print parser.values.datadir
+    #print parser.values.datadir
     t = tableMgr()
     walktree(parser.values.datadir, t.addfile, load=True)
     #t.importTables()
@@ -633,10 +711,10 @@ def listencallback(option, opt, value, parser, *args, **kwargs):
         n = raw_input("enter your table: ")
         if n == "Quit":
             break  # stops the loop
-        print t.process(n)
+        #print t.process(n)
 
-def servercallback(option, opt, value, parser, *args, **kwargs):
-    server(tableMgr, walktree, parser.values.datadir)
+#def servercallback(option, opt, value, parser, *args, **kwargs):
+#    server(tableMgr, walktree, parser.values.datadir)
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -646,6 +724,6 @@ if __name__ == '__main__':
     parser.add_option("-t", "--test", action="callback", callback=testcallback)
     parser.add_option("-i", "--import", action="callback", callback=importcallback)
     parser.add_option("-l", "--listen", action="callback", callback=listencallback)
-    parser.add_option("-s", "--server", action="callback", callback=servercallback)
+#    parser.add_option("-s", "--server", action="callback", callback=servercallback)
 
     (options, args) = parser.parse_args()

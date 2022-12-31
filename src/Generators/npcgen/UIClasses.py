@@ -1,5 +1,3 @@
-#!/c/Python22/python
-
 """
  *******************************************************************************
  * 
@@ -26,7 +24,7 @@ from random import choice
 from traceback import format_exception
 #from wx.Python.wx. import *
 import wx
-from xmlrpclib import ServerProxy, Binary, DateTime
+from xmlrpc.client import ServerProxy, Binary, DateTime
 from xml.parsers.expat import ExpatError
 from zlib import compress, decompress
 from time import sleep, time
@@ -34,14 +32,15 @@ from threading import Event, currentThread, Thread
 from xml.sax._exceptions import SAXParseException
 from collections import deque
 
-from Utils import GetRootDir, URLLibTransport, SingletonMetaClass, kTimeZoneDifference
-from PrintableTextControl import PrintableTextControl
-from ClassNames import EmptyNamesCache
-from Utils import GetElapsedTime, ReadWriteLock, GetSimpleHTML
-from NPCConstants import kNPCGenCSSLink, kNPCGenHTMLDocType
+from .Utils import GetRootDir, URLLibTransport, SingletonMetaClass, kTimeZoneDifference
+from .PrintableTextControl import PrintableTextControl
+from .ClassNames import EmptyNamesCache
+from .Utils import GetElapsedTime, ReadWriteLock, GetSimpleHTML
+from .NPCConstants import kNPCGenCSSLink, kNPCGenHTMLDocType
 
 # load the main NPC Engine Functions
-import charactermaker
+from . import charactermaker
+import importlib
 
 
 
@@ -59,8 +58,7 @@ else:
     kFontSize = 8
 
 
-class RecentNPCs(deque):
-    __metaclass__=SingletonMetaClass
+class RecentNPCs(deque, metaclass=SingletonMetaClass):
     def __init__(self):
         self.poo = 1
     def add(self, npc):
@@ -68,8 +66,7 @@ class RecentNPCs(deque):
         if len(self) > kMaxRecentNPCs: self.pop()
 
 
-class DataRepositoryChecker:
-    __metaclass__=SingletonMetaClass
+class DataRepositoryChecker(metaclass=SingletonMetaClass):
     def __init__(self, ui):
         self.ui = ui
         self.currentDataRepositoryMap = charactermaker.GetRepositoryDataMapMain()
@@ -92,7 +89,7 @@ class DataRepositoryChecker:
             self.dataLock.acquireRead()
 
         if reload or not self.xmlCache:
-            print '%-7s%s' % ('', '-] (Re)Loading XML Data...')
+            print('%-7s%s' % ('', '-] (Re)Loading XML Data...'))
             try:
                 self.xmlCache = charactermaker.GetXMLData()
                 ui = self.ui
@@ -100,10 +97,10 @@ class DataRepositoryChecker:
                 ui.classNamesGenreMap = {}
                 ui.classAliasMapCache = {}
                 ui.dropDownListCache = []
-            except SAXParseException, why:
-                print str(why)
-                print 'XML Data had Errors, FAILED to Reload'
-            print '%-7s%s' % ('', '-] Done Loading XML Data.')
+            except SAXParseException as why:
+                print(str(why))
+                print('XML Data had Errors, FAILED to Reload')
+            print('%-7s%s' % ('', '-] Done Loading XML Data.'))
 
         if not reload:
             # done.  reset the event monitor
@@ -125,7 +122,7 @@ class DataRepositoryChecker:
         lastRepository = self.currentDataRepositoryMap
         currentRepository = charactermaker.GetRepositoryDataMapMain()
         changedFiles = []
-        for filePath, lastVersion in lastRepository.items():
+        for filePath, lastVersion in list(lastRepository.items()):
             if type(lastVersion) == type([]): lastVersion = lastVersion[0]
             currentVersion = currentRepository[filePath]
             if type(currentVersion) == type([]): currentVersion = currentVersion[0]
@@ -134,26 +131,26 @@ class DataRepositoryChecker:
 
         # check changedFiles, signal loader Event if changes found...
         if changedFiles:
-            print '%-7s%s' % ('', '-] Changes found in data repository...')
+            print('%-7s%s' % ('', '-] Changes found in data repository...'))
             # check the data lock
             self.dataLock.acquireWrite()
 
             # figure out what stuff to reload...
             for fileName in changedFiles:
                 if fileName.endswith('.xml'):
-                    print '%-9s%s %s: %s' % ('', '-]', 'new .xml files found', str(changedFiles))
+                    print('%-9s%s %s: %s' % ('', '-]', 'new .xml files found', str(changedFiles)))
                     self.getXMLData(1)
                     break
             for fileName in changedFiles:
                 if fileName.endswith('.txt'):
-                    print '%-9s%s %s: %s' % ('', '-]', 'new .txt files found', str(changedFiles))
+                    print('%-9s%s %s: %s' % ('', '-]', 'new .txt files found', str(changedFiles)))
                     EmptyNamesCache()
                     break
             self.currentDataRepositoryMap = currentRepository
 
             # done.  reset the event monitors
             self.dataLock.releaseWrite()
-            print '%-7s%s: [%s]\n' % ('', '-] Finished updating data repository', GetElapsedTime(start))
+            print('%-7s%s: [%s]\n' % ('', '-] Finished updating data repository', GetElapsedTime(start)))
 
 
 class UIMixIn:
@@ -192,7 +189,7 @@ class UIMixIn:
             self.xmlCache = charactermaker.GetXMLData()
         attribmap, classes, genreMap, weapons, armor, nameMap = self.xmlCache
         names = []
-        genres = genreMap.keys()
+        genres = list(genreMap.keys())
         genres.sort()
         for genre in genres:
             names.append(genre)
@@ -225,7 +222,7 @@ class UIMixIn:
             self.xmlCache = charactermaker.GetXMLData()
         attribmap, classes, genreMap, weapons, armor, nameMap = self.xmlCache
         names = []
-        values = nameMap.keys()
+        values = list(nameMap.keys())
         if genre and genre in genreMap: values = list(self.getAllGenreNationalities(genre))
         if wildcards:
             #if genre != 'exotic': values.append('exotic')
@@ -243,7 +240,7 @@ class UIMixIn:
             self.xmlCache = charactermaker.GetXMLData()
         attribmap, classes, genreMap, weapons, armor, nameMap = self.xmlCache
         classNames = []
-        genres = genreMap.keys()
+        genres = list(genreMap.keys())
         if genre and genre in genreMap: genres = [genre]
         for genre in genres:
             if genre != 'Random':
@@ -261,7 +258,7 @@ class UIMixIn:
         if reload or not self.dropDownListCache:
             attribmap, classes, genreMap, weapons, armor, nameMap = xmlData
             classNames = []
-            genres = genreMap.keys()
+            genres = list(genreMap.keys())
             genres.sort()
 
             for genre in genres:
@@ -318,7 +315,7 @@ class UIMixIn:
         if reload or not self.classAliasMapCache:
             classAliasMap = {}
             attribmap, classes, genreMap, weapons, armor, nameMap = xmlData
-            aliases = classes.keys()
+            aliases = list(classes.keys())
 
             for alias in aliases:
                 classType = classes[alias]
@@ -366,7 +363,7 @@ class NPCStack(list):
             else:
                 return self[self.index]
 
-    def next(self):
+    def __next__(self):
         if self.index is not None:
             self.index += 1
             if self.index >= len(self):
@@ -407,7 +404,7 @@ class LogWindow(PrintableTextControl):
             errorlog = file(kErrorLogFilePath, 'a')
             errorlog.write(text)
             errorlog.close()
-        except (OSError, IOError), why:
+        except (OSError, IOError) as why:
             self.WriteText(str(why) + '\n')
 
     def write(self, text):
@@ -452,7 +449,7 @@ class ErrorLog:
             errorlog = file(kErrorLogFilePath, 'a')
             errorlog.write(text)
             errorlog.close()
-        except (OSError, IOError), why:
+        except (OSError, IOError) as why:
             self.logWindow.LoadString(str(why) + '\n')
 
 
@@ -596,12 +593,12 @@ class SyncDialog(wx.Dialog):
             self.parent.positionTable['useRPCProxy']  = self.useProxy.GetValue()
             if self.useProxy.GetValue():
                 self.parent.positionTable['RPCServerProxy'] = self.proxyField.GetValue()
-        except ExpatError, why:
+        except ExpatError as why:
             self.logWindow.WriteText('Received unparseable HTTP error from proxy: %s' % str(why))
             self.logCurrentExceptionTrace()
-        except IOError, why:
+        except IOError as why:
             self.logWindow.WriteText('Failed to connect: %s' % str(why))
-        except Exception, why:
+        except Exception as why:
             self.logWindow.WriteText('Failed to connect: %s' % str(why))
             self.logCurrentExceptionTrace()
             # raise sys.exc_info()[1]
@@ -609,7 +606,7 @@ class SyncDialog(wx.Dialog):
 
     def logCurrentExceptionTrace(self):
         "log the current exception stack trace to the error log of this dialogue's parent"
-        exceptionTrace = string.join(format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback), '')
+        exceptionTrace = string.join(format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]), '')
         self.parent.writeError(exceptionTrace, display=0)
 
 
@@ -652,12 +649,12 @@ class SyncDialog(wx.Dialog):
                 if self.syncCodeRB.GetValue():
                     if os.path.basename(sys.argv[0]) == 'cmaker-gui.py':
                         self.logWindow.WriteText('reloading main engine module...\n')
-                        reload(charactermaker)
+                        importlib.reload(charactermaker)
                 else:
                     self.logWindow.WriteText('reloading local xml data...\n')
                     self.parent.onReload(event)
                 self.logWindow.WriteText('Done.\n\n')
-            except Exception, why:
+            except Exception as why:
                 self.logWindow.WriteText('Failed download: %s' % str(why))
                 self.logCurrentExceptionTrace()
         else:
@@ -693,7 +690,7 @@ class SyncDialog(wx.Dialog):
                     self.uploadButton.Enable(0)
                 # out of loop: done
                 self.logWindow.WriteText('Done.\n\n')
-            except Exception, why:
+            except Exception as why:
                 # HACK: assume it was a password failure, so reset stored password
                 self.parent.positionTable['uploadPassword'] = ''
                 self.logWindow.WriteText('Failed upload: %s' % str(why))

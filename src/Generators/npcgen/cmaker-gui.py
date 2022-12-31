@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 """
  *******************************************************************************
  * 
@@ -23,7 +21,7 @@
 """ 
  
 
-import sys, os, string, cPickle, codecs, StringIO
+import sys, os, string, pickle, codecs, io
 import wx
 
 from random import choice
@@ -31,16 +29,16 @@ from time import time
 from zlib import compress, decompress
 from pprint import PrettyPrinter
 from traceback import format_exception
-from xmlrpclib import ServerProxy, Binary
+from xmlrpc.client import ServerProxy, Binary
 from xml.sax._exceptions import SAXParseException
 
-from Utils import GetRootDir, GetElapsedTime, URLLibTransport, GetSimpleHTML
-from parentsTree import CreateParentsTree
-from UIClasses import UIMixIn, NPCStack, LogWindow, ErrorLog, SyncDialog, TargetPointsDialog
-from NPCData import NPCBuilder
+from .Utils import GetRootDir, GetElapsedTime, URLLibTransport, GetSimpleHTML
+from .parentsTree import CreateParentsTree
+from .UIClasses import UIMixIn, NPCStack, LogWindow, ErrorLog, SyncDialog, TargetPointsDialog
+from .NPCData import NPCBuilder
 
 # load the main NPC Engine Functions
-import charactermaker
+from . import charactermaker
 
 args = sys.argv
 
@@ -145,9 +143,9 @@ class NPCFrame(wx.Frame, UIMixIn):
         self.createErrorLog()
 
     def writeLog(self, *args):
-        logString = unicode('', 'utf8')
+        logString = str('', 'utf8')
         for arg in args:
-            if (type(arg) == type(u'')): logString += arg
+            if (type(arg) == type('')): logString += arg
             else: logString += str(arg)
         self.logWindow.LoadString(logString)
 
@@ -178,7 +176,7 @@ class NPCFrame(wx.Frame, UIMixIn):
 
     def logCurrentExceptionTrace(self):
         'log the current exception stack trace to the error log'
-        exceptionTrace = string.join(format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback), '')
+        exceptionTrace = string.join(format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]), '')
         #self.writeError(exceptionTrace, display=0)
         self.errorLog.writeToErrorLog(exceptionTrace, display=0)
 
@@ -421,10 +419,10 @@ class NPCFrame(wx.Frame, UIMixIn):
             marker = '##!!##'
             npcRaw = npcData[npcData.find(marker)+len(marker):npcData.rfind(marker)]
             try:
-                npc = cPickle.loads(decompress(npcRaw.decode('hex')))
+                npc = pickle.loads(decompress(npcRaw.decode('hex')))
             except TypeError:
                 # k, try old way, using base64...
-                npc = cPickle.loads(decompress(npcRaw.decode('base64')))
+                npc = pickle.loads(decompress(npcRaw.decode('base64')))
             self.npcStack.append(npc)
             self.displayNPC(npc)
             # renable relevant buttons/tools
@@ -470,7 +468,7 @@ class NPCFrame(wx.Frame, UIMixIn):
             self.GetToolBar().Refresh()
             self.displayNPC(self.npcStack.getCurrent())
             self.SetStatusText('All XML Data has been reloaded')
-        except SAXParseException, why:
+        except SAXParseException as why:
             self.logWindow.LoadString(str(why))
             self.SetStatusText('XML Data had Errors, FAILED to Reload')
 
@@ -583,7 +581,7 @@ class NPCFrame(wx.Frame, UIMixIn):
                 #print 'finished creating...'
             else:
                 self.SetStatusText('No target Selected')
-        except Exception, why:
+        except Exception as why:
             self.logWindow.WriteText('\n\nFailed to generate NPC [%s] %s: %s' % (genre, shortClassName, str(why)))
             self.SetStatusText('Failed to generate NPC')
             self.logCurrentExceptionTrace()
@@ -635,7 +633,7 @@ class NPCFrame(wx.Frame, UIMixIn):
 
     def displayNextNPC(self, event=None):
         'display the next npc in the stack'
-        npc = self.npcStack.next()
+        npc = next(self.npcStack)
         if npc:
             self.toolBar.EnableTool(890, 1)
             self.displayNPC(npc)
@@ -713,17 +711,17 @@ class NPCFrame(wx.Frame, UIMixIn):
 
         try:
             persistentFile = open(self.sSettingsFileName, 'wb')
-            cPickle.dump(self.positionTable, persistentFile, 1)
+            pickle.dump(self.positionTable, persistentFile, 1)
             persistentFile.close()
             self.SetStatusText("%s Saved." % self.sSettingsFileName)
-        except (OSError, IOError), why:
+        except (OSError, IOError) as why:
             self.SetStatusText("%s NOT Saved.  File System is not writeable!" % self.sSettingsFileName)
 
 
     def loadDefaultSettings(self):
         'load default settings from settings file'
         persistentFile = open(self.sSettingsFileName, 'rb')
-        positionTable = cPickle.load(persistentFile)
+        positionTable = pickle.load(persistentFile)
         persistentFile.close()
 
         self.loadView(positionTable)
@@ -736,13 +734,13 @@ class NPCFrame(wx.Frame, UIMixIn):
             self.SetSize(positionTable['size'])
         if positionTable['position']:
             self.SetPosition(positionTable['position'])
-        if positionTable.has_key('selection'):
+        if 'selection' in positionTable:
             self.characterType.SetSelection(positionTable['selection'])
-        if positionTable.has_key('number'):
+        if 'number' in positionTable:
             self.quantity.SetValue(int(positionTable['number']))
-        if positionTable.has_key('power'):
+        if 'power' in positionTable:
             self.slider.SetValue(int(positionTable['power']))
-        if positionTable.has_key('parentsTreeSize') and positionTable['parentsTreeSize']:
+        if 'parentsTreeSize' in positionTable and positionTable['parentsTreeSize']:
             self.parentsTreeFrameSize = positionTable['parentsTreeSize']
         if 'uploadPassword' not in positionTable:
             positionTable['uploadPassword'] = ''
@@ -806,10 +804,10 @@ class NPCFrame(wx.Frame, UIMixIn):
             # use URLLibTransport so we can use http proxy on this as well
             server = ServerProxy(serverURI, transport=URLLibTransport())
             self.SetStatusText("Loading Data from: %s...." % serverURI)
-            self.xmlCache = cPickle.loads(decompress(server.getTemplateDataFromServer().data))
+            self.xmlCache = pickle.loads(decompress(server.getTemplateDataFromServer().data))
             self.loadDataInteral(reload=0)
             self.SetStatusText("Loading Name Cache from: %s...." % serverURI)
-            charactermaker.ReplaceNamesCacheMain(cPickle.loads(decompress(server.getFullNamesCache().data)))
+            charactermaker.ReplaceNamesCacheMain(pickle.loads(decompress(server.getFullNamesCache().data)))
             self.SetStatusText("Template Data loaded from %s: %s" % (serverURI, GetElapsedTime(startTime)))
 
         serverDialog.Destroy()

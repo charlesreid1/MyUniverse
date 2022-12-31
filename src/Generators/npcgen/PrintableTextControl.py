@@ -1,7 +1,3 @@
-#!/progra~1/python/python
-
-# filename.py
-
 '''
 simple printable text control for wx.Python
 prntxtwx.py

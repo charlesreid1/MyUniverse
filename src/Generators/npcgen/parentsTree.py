@@ -1,5 +1,3 @@
-#!/c/Python22/python
-
 """
  *******************************************************************************
  * 
@@ -20,9 +18,9 @@
 import os
 import wx
 
-from Utils import GetRootDir
-from ClassData import ClassType
-from NPCExceptions import InfiniteLoopError
+from .Utils import GetRootDir
+from .ClassData import ClassType
+from .NPCExceptions import InfiniteLoopError
 
 
 class TreeClassData(wx.TreeItemData):
@@ -63,7 +61,7 @@ def SortClassTypes(classTypes):
     for classType in classTypes:
         classTypeMap[classType.getName()] = classType
 
-    classNames = classTypeMap.keys()
+    classNames = list(classTypeMap.keys())
     classNames.sort()
 
     sortedClassTypes = []
@@ -89,7 +87,7 @@ class NPCTree(wx.TreeCtrl):
         self.classes = classes
 
         root = self.AddRoot("NPC Genres", 3)
-        genres = genreMap.keys()
+        genres = list(genreMap.keys())
         genres.sort()
         for genre in genres:
             genreNode = self.AppendItem(root, genre, 6)
@@ -101,8 +99,8 @@ class NPCTree(wx.TreeCtrl):
                     # make sure we don't create tree node with infinite loop
                     classType.checkForInfiniteLoop(classes)
                     self.createRootClassType(genreNode, classType)
-                except InfiniteLoopError, ex:
-                    print 'Warning: infinite ancestor loop found in class %s' % ex.getClassName()
+                except InfiniteLoopError as ex:
+                    print('Warning: infinite ancestor loop found in class %s' % ex.getClassName())
 
         self.Expand(root)
 
@@ -128,7 +126,7 @@ class NPCTree(wx.TreeCtrl):
 
     def populateClassData(self, parentNode, dict):
         'recursively walk dict, appending name value pairs as nodes...'
-        keys = dict.keys()
+        keys = list(dict.keys())
         keys.sort()
 
         for key in keys:

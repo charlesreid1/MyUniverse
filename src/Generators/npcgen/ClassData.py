@@ -1,5 +1,3 @@
-#!/c/Python22/python
-
 """
  *******************************************************************************
  * 
@@ -19,18 +17,17 @@
 """
 
 import sys, os, re
-from sets import Set, ImmutableSet
 from random import shuffle, choice
 
-from Utils import RandInt, getModeValue, RandDistribInt
-from NPCExceptions import InfiniteLoopError
+from .Utils import RandInt, getModeValue, RandDistribInt
+from .NPCExceptions import InfiniteLoopError
 
 
 # constants
 kClassKeys                = ('nationality', 'gender-ratio', 'item-mod-inc', 'hair', 'eyes', 'age', 'tech-level', 'images-male', 'images-female')
-kRangeSet                = ImmutableSet(('min', 'max', 'mode', 'mean', 'sdev', 'precision', 'type'))
-kItemModifyKeys            = ImmutableSet(('fine-craftmanship', 'adamantine', 'lightened'))
-kItemModifyDamageKeys    = ImmutableSet(('fine-craftmanship', 'adamantine'))
+kRangeSet                = frozenset(('min', 'max', 'mode', 'mean', 'sdev', 'precision', 'type'))
+kItemModifyKeys            = frozenset(('fine-craftmanship', 'adamantine', 'lightened'))
+kItemModifyDamageKeys    = frozenset(('fine-craftmanship', 'adamantine'))
 
 
 # class data containers
@@ -40,7 +37,7 @@ class ClassType(object):
     def __init__(self, attrs=(), genre='', classFilePath=None):
         self.mData = {}
         self.iData = {}
-        self.ancestors = Set()
+        self.ancestors = set()
         self.parentsWalked = 0
         self.infiniteLoopChecked = 0
         localDict = {}
@@ -62,11 +59,11 @@ class ClassType(object):
 
     def hasParents(self):
         'return boolean: whether or not this classType inherits from any parents'
-        return self.mData['class'].has_key('parents')
+        return 'parents' in self.mData['class']
 
     def isAbstract(self):
         'return boolean: whether or not this classType is abstract'
-        return (self.mData['class'].has_key('abstract') and int(self.mData['class']['abstract']))
+        return ('abstract' in self.mData['class'] and int(self.mData['class']['abstract']))
 
     def getAlias(self):
         'return alias'
@@ -81,7 +78,7 @@ class ClassType(object):
 
     def getItemModInc(self):
         'return item-mod-inc'
-        if self.mData['class'].has_key('item-mod-inc'):
+        if 'item-mod-inc' in self.mData['class']:
             return int(self.mData['class']['item-mod-inc'])
         else:
             return 0
@@ -151,11 +148,11 @@ class ClassType(object):
 
     def updateDict(self, classDict, parentDict, grandparentKey):
         'do a "safe" deep update (do not overwrite existing subkeys)'
-        for parentKey, parentValue in parentDict.items():
+        for parentKey, parentValue in list(parentDict.items()):
             if parentKey not in classDict:
                 if (parentKey != 'req'):
                     classDict[parentKey] = parentValue
-                #    else: print 'class %s will not add req: %s, dict: %s, key: %s' % (self.getAlias(), parentValue, str(classDict), str(grandparentKey))
+                #    else: print('class %s will not add req: %s, dict: %s, key: %s' % (self.getAlias(), parentValue, str(classDict), str(grandparentKey)))
             elif type(parentValue) == type({}):
                 self.updateDict(classDict[parentKey], parentValue, parentKey)
     
@@ -168,19 +165,19 @@ class ClassType(object):
                 parent.inheritParents(classes)
             # now that the parent tree has been safely walked, populate with this parentClassData
             parentClassData = parent.mData
-            for parentKey in parentClassData.keys():
+            for parentKey in list(parentClassData.keys()):
                 if parentKey == 'class':
                     # inherit valid class-specific keys from parent
                     for classKey in ('nationality', 'gender-ratio', 'item-mod-inc', 'hair', 'eyes', 'age', 'tech-level'):
-                        if parentClassData[parentKey].has_key(classKey) and not self.mData[parentKey].has_key(classKey):
+                        if classKey in parentClassData[parentKey] and not classKey in self.mData[parentKey]:
                             self.mData[parentKey][classKey] = parentClassData[parentKey][classKey]
                 else:
                     # make shallow copy of dict
                     parentKeyDict = parentClassData[parentKey].copy()
-                    if self.mData.has_key(parentKey):
+                    if parentKey in self.mData:
                         # do a 'safe' update (do not overwrite existing subkeys)
-                        for safeUpdateKey in parentKeyDict.keys():
-                            if not self.mData[parentKey].has_key(safeUpdateKey):
+                        for safeUpdateKey in list(parentKeyDict.keys()):
+                            if safeUpdateKey not in self.mData[parentKey]:
                                 self.mData[parentKey][safeUpdateKey] = parentKeyDict[safeUpdateKey]
                     else:
                         self.mData[parentKey] = parentKeyDict
@@ -220,12 +217,12 @@ class ClassType(object):
 
     def hasAttribSet(self, attribSet):
         'return boolean: true if this character has this attribSet key'
-        return self.mData.has_key(attribSet)
+        return attribSet in self.mData
 
     def getAttribSet(self, attribSet, skillmap={}):
         'return: localAttribDict{} from self.mData[attribSet]'
         localAttribDict = {}
-        attributes = self.mData[attribSet].keys()
+        attributes = list(self.mData[attribSet].keys())
         onlyReq = 0
         total = 0
         if ('min' in self.mData[attribSet]) and ('max' in self.mData[attribSet]):
@@ -252,8 +249,8 @@ class ClassType(object):
         for attrib in attributes:
             attribDict = self.mData[attribSet][attrib]
             #@remove debugging lines below...
-            #@if type(attribDict) != type({}): print attrib, attribDict, attributes
-            if attribDict.has_key('req'):
+            #@if type(attribDict) != type({}): print(attrib, attribDict, attributes)
+            if 'req' in attribDict:
                 if attribDict['req'] == '1':
                     reqVal  = 1
                     reqRand = 1
@@ -313,16 +310,16 @@ class ItemTable(object):
         item = self.mItemStats[itemAlias].copy()
 
         # n% chance that this item is cool
-        if (item.has_key('req-mods')) or \
-           ((item.has_key('mod') and int(item['mod']) != -1) and \
+        if ('req-mods' in item) or \
+           (('mod' in item and int(item['mod']) != -1) and \
            (RandInt(0, 99) < (classTypeModInc + self.mModInc + int(item['mod'])))):
-            if item.has_key('damage'):
+            if 'damage' in item:
                 itemModDict = self.mHandItemMods
             else:
                 itemModDict = self.mItemMods
 
             # randomize the available mods; set totalMods
-            premodKeys = itemModDict.keys()
+            premodKeys = list(itemModDict.keys())
             shuffle(premodKeys)
             maxMods = 1
             if not RandInt(0, 9):
@@ -332,7 +329,7 @@ class ItemTable(object):
             totalMods = RandInt(1, maxMods)
 
             # handle any req-mods ...
-            if item.has_key('req-mods'):
+            if 'req-mods' in item:
                 reqMods = item['req-mods'].split(', ')
                 modKeys = []; modKeys.extend(reqMods)
 
@@ -355,7 +352,7 @@ class ItemTable(object):
                 #amount = getModeValue(min, max, itemModDict[key].get('mode'))
                 amount = RandDistribInt(itemModDict[key])
                 #if key in ('fine-craftmanship', 'lightened', 'improved-db', 'improved-dr', 'adamantine', 'improved-damage', 'increased-to-hit'):
-                #    print 'whoot, %s - %s: with vals %s, got result: %s' % (item['name'], key, itemModDict[key], amount)
+                #    print('whoot, %s - %s: with vals %s, got result: %s' % (item['name'], key, itemModDict[key], amount))
 
                 if ('improved' == key[:8]) or (key in kItemModifyKeys):
                     if key in kItemModifyDamageKeys:
@@ -433,7 +430,7 @@ def PrintWeaponsData(weapons):
     fWeapons.sort()
     for weapon in fWeapons:
         damage, minStrength, name, reqmods, note, reach = weapon
-        print '%-26s damage:%-6s st:%-6s reach:%-6s note:%s' % (name, damage, minStrength, reach, note)
+        print(('%-26s damage:%-6s st:%-6s reach:%-6s note:%s' % (name, damage, minStrength, reach, note)))
 
 
 def PrintArmorData(armorTypes):
@@ -461,13 +458,13 @@ def PrintArmorData(armorTypes):
     for armor in armorList:
         area, db, dr, weight, note, name = armor
         if lastarea != area:
-            print '-' * 110
+            print(('-' * 110))
         lastarea = area
-        print '%-26s area:%-12s db:%-1s dr:%-3s weight:%-8s note:%s' % (name, area, db, dr, weight, note)
+        print(('%-26s area:%-12s db:%-1s dr:%-3s weight:%-8s note:%s' % (name, area, db, dr, weight, note)))
 
 
 if __name__ == '__main__':
-    from charactermaker import GetXMLData
+    from .charactermaker import GetXMLData
     args = sys.argv
     if len(args) > 1:
         printTarget = args[1]
@@ -478,7 +475,7 @@ if __name__ == '__main__':
         elif printTarget == 'weapons':
             PrintWeaponsData(weapons)
         else:
-            print '%s  What?' % printTarget
+            print(('%s  What?' % printTarget))
 
 
 """
@@ -509,7 +506,7 @@ if __name__ == '__main__':
  * remove trailing space on armor area
  *
  * Revision 1.12  2003/10/02 20:00:22  andrew
- * format and print armor/weapons based on main arg
+ * format and print(armor/weapons based on main arg)
  *
  * Revision 1.11  2003/09/23 17:21:16  andrew
  * some minor code cleanup

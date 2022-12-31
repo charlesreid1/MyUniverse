@@ -1,7 +1,7 @@
 
 '''planet generation module.'''
 
-from secgen import *
+#from secgen import *
 from subprocess import *
 
 class PlanetGenerator:

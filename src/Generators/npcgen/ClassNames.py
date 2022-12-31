@@ -1,5 +1,3 @@
-#!/c/Python22/python
-
 """
  *******************************************************************************
  * 
@@ -20,13 +18,12 @@
 import sys, os, codecs
 from random import choice
 
-from ExoticNames import GetExoticName
-from Utils import GetRootDir, RandInt
+from .ExoticNames import GetExoticName
+from .Utils import GetRootDir, RandInt
 
 # static stuff
 kRootDir                        = GetRootDir()
 kNamesCache                        = {}
-kuBOM                            = unicode(codecs.BOM_UTF8, 'utf-8')
 
 
 def GetName(type, nationality, gender, nameMap):
@@ -42,7 +39,7 @@ def GetName(type, nationality, gender, nameMap):
     PopulateNamesCacheFromFilePaths(filePaths, pathInfix, kNamesCache)
 
     # ensure non-empty name and return
-    name = unicode('', 'utf-8')
+    name = u''
     while not name:
         name = choice(kNamesCache[choice(filePaths)])
     return name
@@ -67,7 +64,6 @@ def PopulateNamesCacheFromFilePaths(filePaths, pathInfix, cache):
             namefile = codecs.open(fullPath, 'rU', 'utf-8')
             names = []
             for i, namePair in enumerate(namefile):
-                if (i == 0) and namePair.startswith(kuBOM): namePair = namePair.lstrip(kuBOM)
                 for name in namePair[:-1].split(', '):
                     names.append(name)
             cache[filePath] = names
@@ -101,7 +97,7 @@ def GetFullName(nationality, genderRatio, nameMap):
 
 # "ISO-8859-1"  cp437 cp850 cp1252
 if __name__ == '__main__':
-    from charactermaker import GetXMLData
+    from .charactermaker import GetXMLData
     nameMap = GetXMLData()[-1]
     args = sys.argv
     encoding = 'cp437'
@@ -111,12 +107,12 @@ if __name__ == '__main__':
         total = 4
     for nationality in ('spanish',):
         #'english', 'various', 'american', 'chinese', 'spanish'):
-        print
+        print()
         for i in range(total):
             name, gender = GetFullName(nationality, 50, nameMap)
-            print '%-12s: %s [%s]' % (nationality, name.encode(encoding, 'replace'), gender)
-            #print name.encode(encoding), gender
-            #print name, gender
+            print(('%-12s: %s [%s]' % (nationality, name.encode(encoding, 'replace'), gender)))
+            #print(name.encode(encoding), gender)
+            #print(name, gender)
 
 
 

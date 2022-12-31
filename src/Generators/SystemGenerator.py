@@ -1,9 +1,8 @@
 
 import os
 import sys
-from secgen import subSector
 from subprocess import *
-from PlanetImageGenerator import PlanetImageGenerator
+from .PlanetImageGenerator import PlanetImageGenerator
 import base64
 
 class Magic:
@@ -30,7 +29,7 @@ class Magic:
         offset += 1
         for i in range(offset):
             l = self._value
-            self._value = l * 1103515245L + 12345L
+            self._value = l * 1103515245 + 12345
         return ((self._value >> 16) & 0x7fff)
 
 class systemHtml:
@@ -167,7 +166,7 @@ class starSystem:
         args.append(str(x))
         args.append(str(y))
         args.append(str(z))
-        #print args
+        #print(args)
         o = Popen(args, stdout=PIPE).stdout.read().split('\n')
         systemName = o[0]
         location = o[1]
@@ -197,12 +196,12 @@ class starSystem:
                 previousLevel = level + 1
             current[previousLevel] = b
             current[previousLevel - 1].addOrbit(orbit, b)
-            #print 'orbit = ' + str(orbit)
-            #print 'level = ' + str(level)
-            #print 'name = ' + b.Name()
-            #print 'type = ' + b.Type()
+            #print('orbit = ' + str(orbit))
+            #print('level = ' + str(level))
+            #print('name = ' + b.Name())
+            #print('type = ' + b.Type())
             #print
-        #print self._bodies
+        #print(self._bodies)
         #self._primary.Print()
     def Name(self):
         name = ''
@@ -230,7 +229,7 @@ class starSystem:
 
 class body:
     def __init__(self, l, x, y, z):
-        print l
+        print(l)
         self._x = x
         self._y = y
         self._z = z
@@ -259,9 +258,9 @@ class body:
         self._orbit = o
         self._satelites[len(self._satelites)] = b
     def Print(self):
-        print self._orbit, self._name
+        print(self._orbit, self._name)
         for o in self._satelites:
-            print '\t', o
+            print('\t', o)
             self._satelites[o].Print()
     def GetImage(self):
         size = 32
@@ -278,7 +277,7 @@ class body:
         elif self._type[:4] == 'Star':
             s = "<img alt='Sun' src='html/Sun.png' width=40 height=40 border=0>"
         else:
-            #print self._type
+            #print(self._type)
             magnification = str(int(self._type[1], 16) / 10.0 + .1)
             if int(self._type[1], 16) > 10:
                 magnification = '1.0'
@@ -341,7 +340,7 @@ class SystemGenerator:
         
 def main(argv):
     if len(argv) < 4:
-        print 'x y z'
+        print('x y z')
         return
     sys = starSystem(argv[1], argv[2], argv[3])
     

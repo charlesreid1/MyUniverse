@@ -1,6 +1,4 @@
-
-from secgen import *
-from secgen.subSector import *
+from .secgen import *
 from subprocess import *
 
 class SectorGenerator:
@@ -16,7 +14,7 @@ class SectorGenerator:
         pass
     def roll(self, p, numRolls):
         subSector = ""
-        if p.has_key('subsector'):
+        if 'subsector' in p:
             subSector = p['subsector']
         x = p['x']
         y = p['y']
@@ -24,14 +22,14 @@ class SectorGenerator:
         sx = int(x) * 32
         sy = int(y) * 40
         sz = int(z)
-        ex = sx + 32
-        ey = sy + 40
+        ex = int(sx + 32)
+        ey = int(sy + 40)
         ez = sz + 1
         t = ''
         if subSector == "":
             s = subSectorMap(t = 'sec')
             t = "Sector "
-            print sx, sy, sz, ex, ey, ez
+            print(sx, sy, sz, ex, ey, ez)
         else:
             s = subSectorMap(t = 'sub')
             sx = sx + (8 * ((int(subSector) - 1) % 4))
