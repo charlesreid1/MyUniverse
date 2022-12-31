@@ -1,12 +1,12 @@
 import sys
 
-from .Generators.TableGenerator import TableGenerator
-#from .Generators.StateGenerator import StateGenerator
-#from .Generators.SectorGenerator import SectorGenerator
-#from .Generators.SystemGenerator import SystemGenerator
-#from .Generators.PlanetGenerator import PlanetGenerator
-#from .Generators.CharacterGenerator import CharacterGenerator
-#from .Generators.PlanetImageGenerator import PlanetImageGenerator
+from src.Generators.TableGenerator import TableGenerator
+#from src.Generators.StateGenerator import StateGenerator
+#from src.Generators.SectorGenerator import SectorGenerator
+#from src.Generators.SystemGenerator import SystemGenerator
+#from src.Generators.PlanetGenerator import PlanetGenerator
+#from src.Generators.CharacterGenerator import CharacterGenerator
+#from src.Generators.PlanetImageGenerator import PlanetImageGenerator
 
 
 def main():
