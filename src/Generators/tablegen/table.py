@@ -569,7 +569,7 @@ class tableMgr(object):
             handle = tf_map[f]
             s = s + handle(p)
         return s
-    def roll(self, table=None):
+    def roll(self, table):
         ### print("------------------------------------------------")
         ### print("\n".join(self.tfile.keys()))
         self.checkload(table)
