@@ -215,21 +215,37 @@ class tableDB(object):
         self.currentstack[var] = val
 
 class tableFile(object):
+
+    # Comments are a hash sign,
+    # optionally preceded by whitespace \s any num of times
     comment = re.compile(r'^\s*#.*$')
+
+    # Whitespace is just \s any num of times
     whitespace = re.compile(r'^\s*$')
+
+    # Table declarations are on lines starting with colon
     tabledeclaration = re.compile(r'^\s*:([!,/\'\w \+-]*)$')
     #tabledeclaration = re.compile(r'^\s*:(.*)$')
+
+    # No clue
     tabledeclarationalt = re.compile(r'^\s*;([!,/\'\w \+-]*)$')
     #tabledeclarationalt = re.compile(r'^\s*;(.*)$')
+
+    # No clue
     tabledeclarationcsv = re.compile(r'^\s*@([!,/\'\w \+-]*)$')
+
     # need to set multiline
     tableline = re.compile(r'^\s*(\d*)\s*,(.*)')
     tablelinealt = re.compile(r'^\s*(\d*)-(\d*)\s*,(.*)')
+
     continuation = re.compile(r'^_(.*)$')
+
     variabledeclaration = re.compile(r'^\s*%(.*)%?\s*=\s*(.*)$')
+
     parameterdeclaration = re.compile(r'^\s*@.*$')
+
     pragmadeclaration = re.compile(r'^/.*$')
-    namespec = re.compile(r'^[/\w _~,-]*/(.*)\.tab$')
+
     currentstack = dict()
     filename = ''
     def __init__(self, filename):
@@ -239,19 +255,18 @@ class tableFile(object):
         self.stack = dict()
         current = ''
         previous = ''
-        m = self.namespec.match(filename)
-        if m:
-            self.name = m.group(1)
-            for l in codecs.open(filename, 'r', "utf-8"):
-                current = l.strip()
-                m7 = self.continuation.match(current)
-                if m7:
-                    x = m7.group(1)
-                    previous = previous + ' ' + x
-                    continue
-                self.addTableLine(previous)
-                previous = current
+        self.name = os.path.splitext(os.path.basename(filename))[0]
+
+        for l in codecs.open(filename, 'r', "utf-8"):
+            current = l.strip()
+            m7 = self.continuation.match(current)
+            if m7:
+                x = m7.group(1)
+                previous = previous + ' ' + x
+                continue
             self.addTableLine(previous)
+            previous = current
+        self.addTableLine(previous)
     def addTableLine(self, line):
         m1 = self.comment.match(line)
         m2 = self.whitespace.match(line)
@@ -441,7 +456,7 @@ class tableMgr(object):
                                 pyparsing.ZeroOrMore(ret | content) + pyparsing.Suppress(closer))
         return ret
     def parse(self, table, exp):
-        print(exp)
+        #print(exp)
         ret = ''
         last = 0
         nestedItems = self.nestedExpr("{{", "}}")
@@ -543,20 +558,17 @@ class tableMgr(object):
         l[0] = m.group(3)
         n = self.parseList(l)
         if f == "for":
-            print(f"    while handling brace, group 1 is FOR")
             #print n, self.parse(table, str(n[1]))
             start = int(self.parse(table, n[0]))
             stop = int(self.parse(table, n[1]))
             for x in range(start, stop):
                 s = s + self.parse(table, n[2])
         elif f == "if":
-            print(f"    while handling brace, group 1 is IF")
             logic = list()
             logic.append(self.parse(table, n[0]))
             if tf_eval(logic) == "True":
                 s = s + self.parse(table, n[1])
         elif f == "assign":
-            print(f"    while handling brace, group 1 is ASSIGN")
             self.tfile[table].setVariable(n[0], self.parse(table, n[1]))
         else:
             p = list()
@@ -576,7 +588,6 @@ class tableMgr(object):
             }
             handle = tf_map[f]
             s = s + handle(p)
-            print(f"    handled brace with {s}")
         return s
     def roll(self, table):
         self.checkload(table)

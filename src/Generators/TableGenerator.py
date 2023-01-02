@@ -1,10 +1,13 @@
+import os
 from .tablegen import table
 
 
 class TableGenerator:
-    def __init__(self):
+    def __init__(self, datadir='Data/Tables'):
         self.tablemanager = table.tableMgr()
-        table.walktree('Data/Tables', self.tablemanager.addfile)
+        if not os.path.exists(datadir) or not os.path.isdir(datadir):
+            raise Exception(f"Error: data dir {datadir} does not exist or is not a dir")
+        table.walktree(datadir, self.tablemanager.addfile)
         self.parameters = dict()
         self.parameters['Seed'] = ['', '0']
         self.pList = ['Seed', 'Group']
