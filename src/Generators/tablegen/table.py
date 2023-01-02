@@ -441,16 +441,21 @@ class tableMgr(object):
                                 pyparsing.ZeroOrMore(ret | content) + pyparsing.Suppress(closer))
         return ret
     def parse(self, table, exp):
-        #print exp
+        print(exp)
         ret = ''
         last = 0
         nestedItems = self.nestedExpr("{{", "}}")
+
+        # Scan the string and chunk it into sentences.
+        # Look for [words] in [brackets] in any of them.
+        # If any are found, create sub-chunks from those.
+        #
+        # (confused - exp already seems to be chunked??)
         for t, s, e in nestedItems.scanString(exp):
             ret = ret + exp[last:s]
             last = e
             for i in t:
                 ret = ret + self.handleBrace(table, i)
-        #print ret, '----', exp
         ret = ret + exp[last:]
         last = 0
         ret1 = ''
@@ -538,17 +543,20 @@ class tableMgr(object):
         l[0] = m.group(3)
         n = self.parseList(l)
         if f == "for":
+            print(f"    while handling brace, group 1 is FOR")
             #print n, self.parse(table, str(n[1]))
             start = int(self.parse(table, n[0]))
             stop = int(self.parse(table, n[1]))
             for x in range(start, stop):
                 s = s + self.parse(table, n[2])
         elif f == "if":
+            print(f"    while handling brace, group 1 is IF")
             logic = list()
             logic.append(self.parse(table, n[0]))
             if tf_eval(logic) == "True":
                 s = s + self.parse(table, n[1])
         elif f == "assign":
+            print(f"    while handling brace, group 1 is ASSIGN")
             self.tfile[table].setVariable(n[0], self.parse(table, n[1]))
         else:
             p = list()
@@ -568,13 +576,18 @@ class tableMgr(object):
             }
             handle = tf_map[f]
             s = s + handle(p)
+            print(f"    handled brace with {s}")
         return s
     def roll(self, table):
-        ### print("------------------------------------------------")
-        ### print("\n".join(self.tfile.keys()))
         self.checkload(table)
         s = self.tfile[table].start()
-        #print '\nroll = ', s
+
+        # start() will return a letter code like [C] or [N]
+        # that determines which top-level template intro to use.
+        # Then, bracket keywords are recursively parsed.
+
+        # The handleBrace() function then 
+
         s = str(s)
         s = self.parse(table, s)
         return s
