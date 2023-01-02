@@ -581,13 +581,8 @@ class tableMgr(object):
     def roll(self, table):
         self.checkload(table)
         s = self.tfile[table].start()
-
-        # start() will return a letter code like [C] or [N]
-        # that determines which top-level template intro to use.
-        # Then, bracket keywords are recursively parsed.
-
-        # The handleBrace() function then 
-
+        # start() will always begin at the [Start] sub-table
+        # and return a random item from it
         s = str(s)
         s = self.parse(table, s)
         return s
