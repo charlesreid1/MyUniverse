@@ -67,3 +67,41 @@ resulting in the opening monologue,
 > and ordered some cold coffee and colder toast.
 
 
+One other note on expressions - they can include
+references to other tables, as well as other sub-tables. For example,
+there are a few expressions that look like this:
+
+```
+[American Census Names.surname]
+```
+
+This will substitute a random value from the sub-table `surname`
+and the table `American Census Names`. This is a separate table
+from the Film Noir Monologue table.
+
+## Defining a Table Generator from .tab files
+
+What if you want to define a table generator database from .tab files,
+making it easier to modify/edit/define them in plain text/version
+control, and then import them when you are ready to generate stuff?
+
+This can be done! The functionality has been shimmed into the TableGenerator
+and TableManager classes. To do this, start by creating a new base directory:
+
+```
+mkdir Data.mini
+```
+
+You will then define a set of .tab files that contain definitions for tables,
+sub-tables, and templates. Take al ook at the baseline examples in `Data.old`.
+Film Noir Monologue generator is a bit complicated but there are some simpler
+ones with only a few sub-tables.
+
+Alternatively, you can just copy the .tab files straight from the `Data.old`
+examples and use them as a starting point to modify them.
+
+`src/Generators/tablegen/table.py` contains the logic for importing data.
+
+
+
+
